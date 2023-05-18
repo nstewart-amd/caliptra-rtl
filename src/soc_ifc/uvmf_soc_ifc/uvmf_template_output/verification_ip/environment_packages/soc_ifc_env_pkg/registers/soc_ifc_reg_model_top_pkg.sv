@@ -270,6 +270,8 @@ package soc_ifc_reg_model_top_pkg;
         uvm_reg_map mbox_csr_AHB_map;
         uvm_reg_map mbox_csr_APB_map;
 
+        uvm_event mbox_lock_clr_miss;
+
         // This tracks expected functionality of the mailbox in a way that is
         // agnostic to the internal state machine implementation and strictly
         // observes the mailbox specification. This is what a more rigorous
@@ -285,6 +287,7 @@ package soc_ifc_reg_model_top_pkg;
         function new(string name = "mbox_csr_ext");
             super.new(name);
             mbox_fn_state_sigs = '{mbox_idle: 1'b1, default: 1'b0};
+            mbox_lock_clr_miss = new("mbox_lock_clr_miss");
         endfunction : new
 
         // FIXME Manually maintaining a list here of registers that are configured
@@ -327,6 +330,7 @@ package soc_ifc_reg_model_top_pkg;
         super.reset(kind);
         mbox_data_q.delete();
         mbox_resp_q.delete();
+        mbox_lock_clr_miss.reset();
 
         // Mailbox State Changes
         // TODO what to do for FW update?
@@ -492,6 +496,7 @@ package soc_ifc_reg_model_top_pkg;
     `include "soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_REQ.svh"
     `include "soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE.svh"
     `include "soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER.svh"
+    `include "soc_ifc_reg_cbs_sha512_acc_csr_LOCK_LOCK.svh"
 
 // pragma uvmf custom define_register_classes end
 // pragma uvmf custom define_block_map_coverage_class begin
@@ -580,6 +585,8 @@ package soc_ifc_reg_model_top_pkg;
         soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE    soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE_cb;
         soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER    soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER_cb;
 
+        soc_ifc_reg_cbs_sha512_acc_csr_LOCK_LOCK sha512_acc_csr_LOCK_LOCK_cb;
+
         uvm_reg_field error_en_flds[$];
         uvm_reg_field notif_en_flds[$];
         uvm_reg_field error_sts_flds[$];
@@ -664,6 +671,7 @@ package soc_ifc_reg_model_top_pkg;
         soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE_cb  = soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE::type_id::create("soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE_cb");
         soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER_cb  = soc_ifc_reg_cbs_soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER::type_id::create("soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER_cb");
 
+        sha512_acc_csr_LOCK_LOCK_cb = soc_ifc_reg_cbs_sha512_acc_csr_LOCK_LOCK::type_id::create("sha512_acc_Csr_lock_lock_cb");
         // Callbacks compute side-effects to other registers in the reg-model
         // in response to 'do_predict'.
         // 'do_predict' is invoked by the reg_predictor after receiving a transaction
@@ -723,6 +731,9 @@ package soc_ifc_reg_model_top_pkg;
         uvm_reg_field_cb::add(soc_ifc_reg_rm.CPTRA_TRNG_STATUS       .DATA_REQ    , soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_REQ_cb     );
         uvm_reg_field_cb::add(soc_ifc_reg_rm.CPTRA_TRNG_STATUS       .DATA_WR_DONE, soc_ifc_reg_CPTRA_TRNG_STATUS_DATA_WR_DONE_cb );
         uvm_reg_field_cb::add(soc_ifc_reg_rm.CPTRA_TRNG_VALID_PAUSER .PAUSER      , soc_ifc_reg_CPTRA_TRNG_VALID_PAUSER_PAUSER_cb );
+
+        /* -- sha512_acc_csr -- */
+        uvm_reg_field_cb::add(sha512_acc_csr_rm.LOCK.LOCK, sha512_acc_csr_LOCK_LOCK_cb);
 
 // pragma uvmf custom construct_configure_build_registers_within_block end
 // pragma uvmf custom add_registers_to_block_map begin
