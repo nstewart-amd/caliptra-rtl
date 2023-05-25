@@ -191,6 +191,8 @@ package soc_ifc_reg_model_top_pkg;
             for (ii=0; ii<$size(this.CPTRA_GENERIC_OUTPUT_WIRES); ii++) begin
                 if ( this.CPTRA_GENERIC_OUTPUT_WIRES[ii].        has_reset("HARD"   )) this.CPTRA_GENERIC_OUTPUT_WIRES[ii].        set_reset(this.CPTRA_GENERIC_OUTPUT_WIRES[ii].        get_reset("HARD"), "SOFT");
             end
+            if ( this.CPTRA_FUSE_VALID_PAUSER.              has_reset("HARD"   )) this.CPTRA_FUSE_VALID_PAUSER.              set_reset(this.CPTRA_FUSE_VALID_PAUSER.              get_reset("HARD"), "SOFT");
+            if ( this.CPTRA_FUSE_PAUSER_LOCK.               has_reset("HARD"   )) this.CPTRA_FUSE_PAUSER_LOCK.               set_reset(this.CPTRA_FUSE_PAUSER_LOCK.               get_reset("HARD"), "SOFT");
 //            for (ii=0; ii<$size(this.fuse_uds_seed); ii++) begin
 //            if ( this.fuse_uds_seed[ii].                    has_reset("HARD"   )) this.fuse_uds_seed[ii].                    set_reset(this.fuse_uds_seed[ii].                    get_reset("HARD"), "SOFT");
 //            end
@@ -223,6 +225,14 @@ package soc_ifc_reg_model_top_pkg;
             if ( this.internal_fw_update_reset.             has_reset("HARD"   )) this.internal_fw_update_reset.             set_reset(this.internal_fw_update_reset.             get_reset("HARD"), "SOFT");
             if ( this.internal_fw_update_reset_wait_cycles. has_reset("HARD"   )) this.internal_fw_update_reset_wait_cycles. set_reset(this.internal_fw_update_reset_wait_cycles. get_reset("HARD"), "SOFT");
             if ( this.internal_nmi_vector.                  has_reset("HARD"   )) this.internal_nmi_vector.                  set_reset(this.internal_nmi_vector.                  get_reset("HARD"), "SOFT");
+            if ( this.internal_hw_error_fatal_mask.         has_reset("HARD"   )) this.internal_hw_error_fatal_mask.         set_reset(this.internal_hw_error_fatal_mask.         get_reset("HARD"), "SOFT");
+            if ( this.internal_hw_error_non_fatal_mask.     has_reset("HARD"   )) this.internal_hw_error_non_fatal_mask.     set_reset(this.internal_hw_error_non_fatal_mask.     get_reset("HARD"), "SOFT");
+            if ( this.internal_fw_error_fatal_mask.         has_reset("HARD"   )) this.internal_fw_error_fatal_mask.         set_reset(this.internal_fw_error_fatal_mask.         get_reset("HARD"), "SOFT");
+            if ( this.internal_fw_error_non_fatal_mask.     has_reset("HARD"   )) this.internal_fw_error_non_fatal_mask.     set_reset(this.internal_fw_error_non_fatal_mask.     get_reset("HARD"), "SOFT");
+//            if ( this.internal_mtime_l.                     has_reset("HARD"   )) this.internal_mtime_l.                     set_reset(this.internal_mtime_l.                     get_reset("HARD"), "SOFT");
+//            if ( this.internal_mtime_h.                     has_reset("HARD"   )) this.internal_mtime_h.                     set_reset(this.internal_mtime_h.                     get_reset("HARD"), "SOFT");
+//            if ( this.internal_mtimecmp_l.                  has_reset("HARD"   )) this.internal_mtimecmp_l.                  set_reset(this.internal_mtimecmp_l.                  get_reset("HARD"), "SOFT");
+//            if ( this.internal_mtimecmp_h.                  has_reset("HARD"   )) this.internal_mtimecmp_h.                  set_reset(this.internal_mtimecmp_h.                  get_reset("HARD"), "SOFT");
         endfunction
 
         virtual function void build();
