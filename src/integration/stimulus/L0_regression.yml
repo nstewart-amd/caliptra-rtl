@@ -35,6 +35,7 @@ contents:
         - ../test_suites/smoke_test_kv_crypto_flow/smoke_test_kv_crypto_flow.yml
         - ../test_suites/pv_hash_and_sign/pv_hash_and_sign.yml
         - ../test_suites/smoke_test_pcr_signing/smoke_test_pcr_signing.yml
+        - ../test_suites/smoke_test_fw_kv_backtoback_hmac/smoke_test_fw_kv_backtoback_hmac.yml
         - ../test_suites/smoke_test_ahb_mux/smoke_test_ahb_mux.yml
         - ../test_suites/smoke_test_doe_rand/smoke_test_doe_rand.yml
         # data vault tests
@@ -47,7 +48,7 @@ contents:
         #smoke test interrupt handling
         #smoke test wd timer expiry and nmi generation
         - ../test_suites/smoke_test_wdt/smoke_test_wdt.yml
-        #- ../test_suites/smoke_test_cg_wdt/smoke_test_cg_wdt.yml
+        - ../test_suites/smoke_test_cg_wdt/smoke_test_cg_wdt.yml
         #smoke test jtag
         #smoke test generic input wire to fw interrupt
-        #- ../test_suites/smoke_test_clk_gating/smoke_test_clk_gating.yml
+        - ../test_suites/smoke_test_clk_gating/smoke_test_clk_gating.yml
