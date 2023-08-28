@@ -292,7 +292,9 @@ package soc_ifc_reg_model_top_pkg;
                                                               `REG_NO_CP_NONCORE_RST(this.CPTRA_FUSE_VALID_PAUSER              )
                                                               `REG_NO_CP_NONCORE_RST(this.CPTRA_FUSE_PAUSER_LOCK               )
             foreach(this.CPTRA_WDT_CFG[ii])                   `REG_NO_CP_NONCORE_RST(this.CPTRA_WDT_CFG[ii]                    )
-            foreach(this.CPTRA_RSVD_REG[ii])                  `REG_NO_CP_NONCORE_RST(this.CPTRA_RSVD_REG[ii]                   )
+                                                              `REG____CP_NONCORE_RST(this.CPTRA_iTRNG_ENTROPY_CONFIG_0         )
+                                                              `REG____CP_NONCORE_RST(this.CPTRA_iTRNG_ENTROPY_CONFIG_1         )
+            foreach(this.CPTRA_RSVD_REG[ii])                  `REG____CP_NONCORE_RST(this.CPTRA_RSVD_REG[ii]                   )
             foreach(this.fuse_uds_seed[ii])                   `REG_NO_CP_NONCORE_RST(this.fuse_uds_seed[ii]                    )
             foreach(this.fuse_field_entropy[ii])              `REG_NO_CP_NONCORE_RST(this.fuse_field_entropy[ii]               )
             foreach(this.fuse_key_manifest_pk_hash[ii])       `REG_NO_CP_NONCORE_RST(this.fuse_key_manifest_pk_hash[ii]        )
@@ -828,6 +830,17 @@ package soc_ifc_reg_model_top_pkg;
       // 
       function new(string name = "soc_ifc_reg_model_top");
          super.new(name, build_coverage(UVM_CVR_ALL));
+      endfunction
+
+      // Function: reset
+      // 
+      function void reset(string kind = "HARD");
+          super.reset(kind);
+          if (kind inside {"HARD", "NONCORE"}) begin
+              // Purge all pending jobs to update the register model
+              `uvm_info("SOC_IFC_REG_MODEL_TOP", {"Reset of kind ", kind, " results in delay_jobs being cleared"}, UVM_HIGH)
+              delay_jobs.delete();
+          end
       endfunction
 
       // Function: build
