@@ -453,9 +453,14 @@ module caliptra_top_tb_services
         if (~cptra_rst_b) begin
             inject_zero_sign_r <= 1'b0;
             inject_zero_sign_r_needs_release <= 1'b0;
+            inject_zero_sign_s <= 1'b0;
+            inject_zero_sign_s_needs_release <= 1'b0;
         end
         else if((WriteData[7:0] == 8'h98) && mailbox_write) begin
             inject_zero_sign_r <= 1'b1;
+        end
+        else if((WriteData[7:0] == 8'h9a) && mailbox_write) begin
+            inject_zero_sign_s <= 1'b1;
         end
         else if(inject_zero_sign_r) begin
             if (caliptra_top_dut.ecc_top1.ecc_dsa_ctrl_i.prog_instr.reg_id == 6'd21) begin //R_ID
@@ -465,19 +470,6 @@ module caliptra_top_tb_services
             else if (inject_zero_sign_r_needs_release) begin
                 inject_zero_sign_r <= 1'b0;
             end
-        end
-        else begin
-            release caliptra_top_dut.ecc_top1.ecc_dsa_ctrl_i.ecc_arith_unit_i.d_o;
-        end
-    end
-
-    always@(posedge clk or negedge cptra_rst_b) begin
-        if (~cptra_rst_b) begin
-            inject_zero_sign_s <= 1'b0;
-            inject_zero_sign_s_needs_release <= 1'b0;
-        end
-        else if((WriteData[7:0] == 8'h9a) && mailbox_write) begin
-            inject_zero_sign_s <= 1'b1;
         end
         else if(inject_zero_sign_s) begin
             if (caliptra_top_dut.ecc_top1.ecc_dsa_ctrl_i.prog_instr.reg_id == 6'd22) begin //S_ID
