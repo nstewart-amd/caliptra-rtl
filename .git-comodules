@@ -11,7 +11,7 @@
         "url": "origin://Ether/d261839b-fbfb-4c03-8bc2-8c8215f98b06",
         "dest": "common/infra",
         "name": "sim_tools",
-        "version": "v2.0.4"
+        "version": "v2.5.11"
     },
     {
         "description": "Verification Tools",
@@ -26,7 +26,7 @@
         "url": "origin://a7961925-9375-4aac-b88b-a0843575b1e4/436b7c4a-1f38-4bd2-9f96-f1eb553d7368",
         "dest": "common/verif/src",
         "name": "foundationware",
-        "version": "promote_foundationware_298"
+        "version": "promote_foundationware_306"
     },
     {
         "description": "Verification Frameworks",
