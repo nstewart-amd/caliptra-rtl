@@ -57,7 +57,8 @@ void sha256_flow(sha256_io block, uint8_t mode, sha256_io digest){
     // Enable SHA256 core 
     VPRINTF(LOW, "Enable SHA256\n");
     lsu_write_32(CLP_SHA256_REG_SHA256_CTRL, SHA256_REG_SHA256_CTRL_INIT_MASK | 
-                                            (mode << SHA256_REG_SHA256_CTRL_MODE_LOW) & SHA256_REG_SHA256_CTRL_MODE_MASK);
+                                            ((mode << SHA256_REG_SHA256_CTRL_MODE_LOW) & SHA256_REG_SHA256_CTRL_MODE_MASK) |
+                                            SHA256_REG_SHA256_CTRL_WNTZ_MODE_MASK);
     
     // wait for SHA to be valid
     wait_for_sha256_intr();

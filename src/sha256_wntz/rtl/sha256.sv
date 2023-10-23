@@ -41,6 +41,7 @@
 
 module sha256 
             import sha256_reg_pkg::*;
+            import sha256_params_pkg::*;
             #(
               parameter ADDR_WIDTH = 32,
               parameter DATA_WIDTH = 32
@@ -63,13 +64,14 @@ module sha256
 
               // Interrupts
               output wire error_intr,
-              output wire notif_intr
+              output wire notif_intr,
+              input  logic debugUnlock_or_scan_mode_switch
              );
 
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
-  `include "sha256_param.sv"
+  // `include "sha256_param.sv"
 
   //----------------------------------------------------------------
   // Registers including update variables and write enable.
@@ -304,6 +306,7 @@ module sha256
       .s_cpuif_req_is_wr   (we),
       .s_cpuif_addr        (address[SHA256_REG_ADDR_WIDTH-1:0]),
       .s_cpuif_wr_data     (write_data),
+      .s_cpuif_wr_biten    ('1),
       .s_cpuif_req_stall_wr( ),
       .s_cpuif_req_stall_rd( ),
       .s_cpuif_rd_ack      ( ),

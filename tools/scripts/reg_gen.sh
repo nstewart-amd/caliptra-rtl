@@ -19,7 +19,7 @@ python3 tools/scripts/reg_gen.py src/pcrvault/rtl/pv_reg.rdl
 python3 tools/scripts/reg_gen.py src/datavault/rtl/dv_reg.rdl
 python3 tools/scripts/reg_gen.py src/ecc/rtl/ecc_reg.rdl
 python3 tools/scripts/reg_gen.py src/sha512/rtl/sha512_reg.rdl
-python3 tools/scripts/reg_gen.py src/sha256/rtl/sha256_reg.rdl
+python3 tools/scripts/reg_gen.py src/sha256_wntz/rtl/sha256_reg.rdl
 python3 tools/scripts/reg_gen.py src/soc_ifc/rtl/mbox_csr.rdl
 python3 tools/scripts/reg_gen.py src/soc_ifc/rtl/sha512_acc_csr.rdl
 python3 tools/scripts/reg_gen.py src/soc_ifc/rtl/soc_ifc_reg.rdl
