@@ -277,7 +277,7 @@ module sha256
     init_reg = hwif_out.SHA256_CTRL.INIT.value;
     next_reg = hwif_out.SHA256_CTRL.NEXT.value;
     mode_reg = hwif_out.SHA256_CTRL.MODE.value;
-    zeroize_reg = hwif_out.SHA256_CTRL.ZEROIZE.value;
+    zeroize_reg = hwif_out.SHA256_CTRL.ZEROIZE.value || debugUnlock_or_scan_mode_switch;
     wntz_mode = hwif_out.SHA256_CTRL.WNTZ_MODE.value;
 
     hwif_in.SHA256_STATUS.READY.next = ready_reg;
