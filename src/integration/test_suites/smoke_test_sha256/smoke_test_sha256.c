@@ -79,6 +79,15 @@ void main() {
                                     0x96177A9C,
                                     0xB410FF61,
                                     0xF20015AD};
+
+    uint32_t expected_wntz_digest[] = { 0x878c3a97,
+                                        0x60a60fc2,
+                                        0x52a91561,
+                                        0xdba6f179,
+                                        0xc9dc0292,
+                                        0xaa1733c6,
+                                        0x60c4a965,
+                                        0x03780f5f};
                                     
 
 
@@ -99,7 +108,7 @@ void main() {
 
     sha256_digest.data_size = 8;
     for (int i = 0; i < sha256_digest.data_size; i++)
-        sha256_digest.data[i] = expected_digest[i];
+        sha256_digest.data[i] = expected_wntz_digest[i];
 
     sha256_flow(sha256_block, SHA256_MODE_SHA_256, sha256_digest);
     sha256_zeroize();
