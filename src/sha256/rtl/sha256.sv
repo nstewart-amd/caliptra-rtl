@@ -2,7 +2,7 @@
 //
 // Updated by Caliptra team to modify data access width
 //
-// sha256.sv
+// sha256.v
 // --------
 // Top level wrapper for the SHA-256 hash function providing
 // a simple memory like interface with 32 bit data access.
@@ -69,6 +69,11 @@ module sha256
              );
 
   //----------------------------------------------------------------
+  // Internal constant and parameter definitions.
+  //----------------------------------------------------------------
+  // `include "sha256_param.sv"
+
+  //----------------------------------------------------------------
   // Registers including update variables and write enable.
   //----------------------------------------------------------------
   reg init_reg;
@@ -80,7 +85,8 @@ module sha256
   localparam BLOCK_NO = 512 / DATA_WIDTH;
   reg [DATA_WIDTH-1 : 0] block_reg [BLOCK_NO-1 : 0];
 
-  reg [7 : 0][31 : 0] digest_reg;
+  // reg [7 : 0][31 : 0] digest_reg;     ?????
+  reg [0 : 7][31 : 0] digest_reg;
   reg                 digest_valid_reg;
 
   // Interrupts
@@ -92,17 +98,60 @@ module sha256
   // Wires.
   //----------------------------------------------------------------
   wire              core_ready;
-  wire [511 : 0]    core_block;
-  wire [7:0][31:0]  core_digest;
+  logic [511 : 0]    core_block;
+//  wire [7:0][31:0]  core_digest;        ??????
+  wire [0:7][31:0]  core_digest;
   wire              core_digest_valid;
+
+  logic [3:0]       loop_j_reg;
+  logic             wntz_busy;         // to regiser
+  logic             wntz_mode;         // from registers
+  logic             core_init, core_next, core_mode;
+  logic             wntz_init, wntz_next;
+  logic             wntz_1st_blk, wntz_blk_done;
+
+  typedef enum logic [2:0] {WNTZ_IDLE, WNTZ_1ST, WNTZ_OTHERS} wntz_fsm_t;
+  wntz_fsm_t        wntz_fsm;
+
 
   //----------------------------------------------------------------
   // Concurrent connectivity for ports etc.
   //----------------------------------------------------------------
-  assign core_block = {block_reg[00], block_reg[01], block_reg[02], block_reg[03],
-                       block_reg[04], block_reg[05], block_reg[06], block_reg[07],
-                       block_reg[08], block_reg[09], block_reg[10], block_reg[11],
-                       block_reg[12], block_reg[13], block_reg[14], block_reg[15]};
+
+  always_comb begin
+    if (wntz_mode) begin
+      core_block = wntz_1st_blk ?
+                   {block_reg[00], block_reg[01], block_reg[02], block_reg[03],
+                    block_reg[04], block_reg[05], block_reg[06], block_reg[07],
+                    block_reg[08], block_reg[09], block_reg[10], block_reg[11],
+                    block_reg[12], block_reg[13], block_reg[14], block_reg[15]} : 
+
+                   {block_reg[00], block_reg[01], block_reg[02], block_reg[03],     // I: 16byte
+                    block_reg[04], {block_reg[05][31:16], 4'h0, loop_j_reg, digest_reg[0][31:24]}, 
+                    {digest_reg[0][23:0], digest_reg[1][31:24]},
+                    {digest_reg[1][23:0], digest_reg[2][31:24]},
+                    {digest_reg[2][23:0], digest_reg[3][31:24]},
+                    {digest_reg[3][23:0], digest_reg[4][31:24]},
+                    {digest_reg[4][23:0], digest_reg[5][31:24]},
+                    {digest_reg[5][23:0], digest_reg[6][31:24]},
+                    {digest_reg[6][23:0], digest_reg[7][31:24]},
+                    {digest_reg[7][23:0], 8'h80},                 // 448-bits or 56 bytes
+                    {64'h01b8}};                                  // L = 440bits per SHA256 padding
+                   
+
+      core_init = wntz_init;
+      core_next = wntz_next;
+      core_mode = 1'b1;         // always SHA256 for Winternitz
+    end else begin
+      core_block = {block_reg[00], block_reg[01], block_reg[02], block_reg[03],
+                    block_reg[04], block_reg[05], block_reg[06], block_reg[07],
+                    block_reg[08], block_reg[09], block_reg[10], block_reg[11],
+                    block_reg[12], block_reg[13], block_reg[14], block_reg[15]};
+      core_init = init_reg;
+      core_next = next_reg;
+      core_mode = mode_reg;
+    end
+  end   // always_comb
 
   assign err = read_error | write_error;
 
@@ -114,18 +163,78 @@ module sha256
                    .reset_n(reset_n),
                    .zeroize(zeroize_reg),
 
-                   .init_cmd(init_reg),
-                   .next_cmd(next_reg),
-                   .mode(mode_reg),
+                   .init_cmd(core_init),
+                   .next_cmd(core_next),
+                   .mode(core_mode),
 
                    .block_msg(core_block),
 
                    .ready(core_ready),
 
-                   .digest(core_digest),
+                   .digest(core_digest),    
                    .digest_valid(core_digest_valid)
                   );
+  //  .digest(core_digest),        
+  //     problem is that digest is a 511:0 vector, but core_digest is a packed array. 
+  //     if core_digest is defined as [7:0][31:0], we will have core_digest[7] as MSB. 
 
+  //----------------------------------------------------------------
+  assign wntz_busy     = (wntz_fsm != WNTZ_IDLE);
+  assign wntz_1st_blk  = (wntz_fsm == WNTZ_1ST);
+  assign wntz_blk_done = core_digest_valid & ~digest_valid_reg;
+  assign wntz_next     = 1'b0;
+
+  always @ (posedge clk or negedge reset_n)
+    begin
+      if (!reset_n) begin
+        loop_j_reg <= 0;
+        wntz_fsm   <= WNTZ_IDLE;
+        wntz_init  <= 1'b0;
+      end else begin
+        case (wntz_fsm)
+          WNTZ_IDLE: 
+            begin 
+              if (wntz_mode && init_reg && (block_reg[5][11:8] <= 14)) begin
+                wntz_fsm   <= WNTZ_1ST;
+                loop_j_reg <= block_reg[5][11:8];
+                wntz_init  <= 1'b1;
+              end else begin
+                wntz_init  <= 1'b0;
+              end
+            end 
+          WNTZ_1ST:  
+            begin
+              if (wntz_blk_done && (loop_j_reg < 14)) begin
+                wntz_fsm   <= WNTZ_OTHERS;
+                loop_j_reg <= loop_j_reg + 1;
+                wntz_init  <= 1'b1;
+              end else if (wntz_blk_done) begin
+                wntz_fsm   <= WNTZ_IDLE;
+                loop_j_reg <= 0;
+                wntz_init  <= 1'b0;
+              end else begin 
+                wntz_init  <= 1'b0;
+              end
+            end
+          WNTZ_OTHERS: 
+            begin 
+              if (wntz_blk_done && (loop_j_reg < 14)) begin
+                loop_j_reg <= loop_j_reg + 1;
+                wntz_init  <= 1'b1;
+              end else if (wntz_blk_done) begin
+                wntz_fsm   <= WNTZ_IDLE;
+                loop_j_reg <= 0;
+                wntz_init  <= 1'b0;
+              end else begin
+                wntz_init  <= 1'b0;
+              end 
+            end
+          default: 
+            wntz_fsm <= WNTZ_IDLE;
+        endcase
+        
+      end
+    end
 
   //----------------------------------------------------------------
   // reg_update
@@ -169,12 +278,15 @@ module sha256
     next_reg = hwif_out.SHA256_CTRL.NEXT.value;
     mode_reg = hwif_out.SHA256_CTRL.MODE.value;
     zeroize_reg = hwif_out.SHA256_CTRL.ZEROIZE.value || debugUnlock_or_scan_mode_switch;
+    wntz_mode = hwif_out.SHA256_CTRL.WNTZ_MODE.value;
 
     hwif_in.SHA256_STATUS.READY.next = ready_reg;
     hwif_in.SHA256_STATUS.VALID.next = digest_valid_reg;
+    hwif_in.SHA256_STATUS.WNTZ_BUSY.next = wntz_busy;
 
     for (int dword =0; dword < 8; dword++) begin
-      hwif_in.SHA256_DIGEST[dword].DIGEST.next = digest_reg[7-dword];
+//      hwif_in.SHA256_DIGEST[dword].DIGEST.next = digest_reg[7-dword];
+      hwif_in.SHA256_DIGEST[dword].DIGEST.next = digest_reg[dword];
       hwif_in.SHA256_DIGEST[dword].DIGEST.hwclr = zeroize_reg;
     end
 
