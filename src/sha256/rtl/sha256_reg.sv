@@ -165,6 +165,10 @@ module sha256_reg (
                 logic next;
                 logic load_next;
             } ZEROIZE;
+            struct packed{
+                logic next;
+                logic load_next;
+            } WNTZ_MODE;
         } SHA256_CTRL;
         struct packed{
             struct packed{
@@ -371,6 +375,9 @@ module sha256_reg (
             struct packed{
                 logic value;
             } ZEROIZE;
+            struct packed{
+                logic value;
+            } WNTZ_MODE;
         } SHA256_CTRL;
         struct packed{
             struct packed{
@@ -597,6 +604,25 @@ module sha256_reg (
         end
     end
     assign hwif_out.SHA256_CTRL.ZEROIZE.value = field_storage.SHA256_CTRL.ZEROIZE.value;
+    // Field: sha256_reg.SHA256_CTRL.WNTZ_MODE
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.SHA256_CTRL.WNTZ_MODE.value;
+        automatic logic load_next_c = '0;
+        if(decoded_reg_strb.SHA256_CTRL && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.SHA256_CTRL.WNTZ_MODE.value & ~decoded_wr_biten[4:4]) | (decoded_wr_data[4:4] & decoded_wr_biten[4:4]);
+            load_next_c = '1;
+        end
+        field_combo.SHA256_CTRL.WNTZ_MODE.next = next_c;
+        field_combo.SHA256_CTRL.WNTZ_MODE.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge hwif_in.reset_b) begin
+        if(~hwif_in.reset_b) begin
+            field_storage.SHA256_CTRL.WNTZ_MODE.value <= 'h0;
+        end else if(field_combo.SHA256_CTRL.WNTZ_MODE.load_next) begin
+            field_storage.SHA256_CTRL.WNTZ_MODE.value <= field_combo.SHA256_CTRL.WNTZ_MODE.next;
+        end
+    end
+    assign hwif_out.SHA256_CTRL.WNTZ_MODE.value = field_storage.SHA256_CTRL.WNTZ_MODE.value;
     for(genvar i0=0; i0<16; i0++) begin
         // Field: sha256_reg.SHA256_BLOCK[].BLOCK
         always_comb begin
@@ -1364,7 +1390,8 @@ module sha256_reg (
     end
     assign readback_array[4][0:0] = (decoded_reg_strb.SHA256_STATUS && !decoded_req_is_wr) ? hwif_in.SHA256_STATUS.READY.next : '0;
     assign readback_array[4][1:1] = (decoded_reg_strb.SHA256_STATUS && !decoded_req_is_wr) ? hwif_in.SHA256_STATUS.VALID.next : '0;
-    assign readback_array[4][31:2] = '0;
+    assign readback_array[4][2:2] = (decoded_reg_strb.SHA256_STATUS && !decoded_req_is_wr) ? hwif_in.SHA256_STATUS.WNTZ_BUSY.next : '0;
+    assign readback_array[4][31:3] = '0;
     for(genvar i0=0; i0<8; i0++) begin
         assign readback_array[i0*1 + 5][31:0] = (decoded_reg_strb.SHA256_DIGEST[i0] && !decoded_req_is_wr) ? field_storage.SHA256_DIGEST[i0].DIGEST.value : '0;
     end
