@@ -102,12 +102,14 @@ module sha256
 //  wire [7:0][31:0]  core_digest;        ??????
   wire [0:7][31:0]  core_digest;
   wire              core_digest_valid;
+  logic             core_digest_valid_reg;
 
   logic [3:0]       loop_j_reg;
   logic             wntz_busy;         // to regiser
   logic             wntz_mode;         // from registers
   logic             core_init, core_next, core_mode;
   logic             wntz_init, wntz_next;
+  logic             wntz_init_reg;
   logic             wntz_1st_blk, wntz_blk_done;
 
   typedef enum logic [2:0] {WNTZ_IDLE, WNTZ_1ST, WNTZ_OTHERS} wntz_fsm_t;
@@ -141,7 +143,7 @@ module sha256
 
       core_init = wntz_init;
       core_next = wntz_next;
-      core_mode = 1'b1;         // always SHA256 for Winternitz
+      core_mode = mode_reg;
     end else begin
       core_block = {block_reg[00], block_reg[01], block_reg[02], block_reg[03],
                     block_reg[04], block_reg[05], block_reg[06], block_reg[07],
@@ -181,8 +183,15 @@ module sha256
   //----------------------------------------------------------------
   assign wntz_busy     = (wntz_fsm != WNTZ_IDLE);
   assign wntz_1st_blk  = (wntz_fsm == WNTZ_1ST);
-  assign wntz_blk_done = core_digest_valid & ~digest_valid_reg;
+  assign wntz_blk_done = core_digest_valid & ~core_digest_valid_reg;
   assign wntz_next     = 1'b0;
+
+  // always_comb begin
+  //   case (wntz_fsm)
+  //         WNTZ_IDLE:  wntz_init  = init_reg;
+  //         default:    wntz_init  = wntz_init_reg;
+  //   endcase
+  // end
 
   always @ (posedge clk or negedge reset_n)
     begin
@@ -201,6 +210,7 @@ module sha256
               end else begin
                 wntz_init  <= 1'b0;
               end
+              //wntz_init <= 1'b0;
             end 
           WNTZ_1ST:  
             begin
@@ -256,8 +266,9 @@ module sha256
         digest_valid_reg <= '0;
       end
       else begin
-        ready_reg        <= core_ready;
-        digest_valid_reg <= core_digest_valid;
+        ready_reg        <= core_ready & !wntz_busy;
+        digest_valid_reg <= core_digest_valid & !wntz_busy;
+        core_digest_valid_reg <= core_digest_valid;
 
         if (core_digest_valid & ~digest_valid_reg)
           digest_reg <= core_digest;
