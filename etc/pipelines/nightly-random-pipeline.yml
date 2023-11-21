@@ -8,6 +8,7 @@ schedules:
     branches:
       include:
         - master
+        - user/dev/mojtabab/ecc_radix48
     always: true
 
 # Point to another repository for the pipeline template
