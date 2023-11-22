@@ -121,11 +121,21 @@ package sha256_reg_pkg;
     } sha256_reg__SHA256_CTRL__WNTZ_MODE__out_t;
 
     typedef struct packed{
+        logic [3:0] value;
+    } sha256_reg__SHA256_CTRL__WNTZ_W__out_t;
+
+    typedef struct packed{
+        logic value;
+    } sha256_reg__SHA256_CTRL__WNTZ_N_MODE__out_t;
+
+    typedef struct packed{
         sha256_reg__SHA256_CTRL__INIT__out_t INIT;
         sha256_reg__SHA256_CTRL__NEXT__out_t NEXT;
         sha256_reg__SHA256_CTRL__MODE__out_t MODE;
         sha256_reg__SHA256_CTRL__ZEROIZE__out_t ZEROIZE;
         sha256_reg__SHA256_CTRL__WNTZ_MODE__out_t WNTZ_MODE;
+        sha256_reg__SHA256_CTRL__WNTZ_W__out_t WNTZ_W;
+        sha256_reg__SHA256_CTRL__WNTZ_N_MODE__out_t WNTZ_N_MODE;
     } sha256_reg__SHA256_CTRL__out_t;
 
     typedef struct packed{

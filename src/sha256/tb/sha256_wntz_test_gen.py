@@ -29,7 +29,8 @@ def generate_expected_wntz_digest():
         if(line[0:8] == "BLOCK = "):
             block_str = line.strip()[8:]   
 
-    print(block_str) 
+    #print(block_str) 
+    block_str = '9e14f94af2b142af655bb024501ff00700000000000009aad490eb72b80d40b39ef87a17f53b21f0345a6aaebccb6b'
 
     #Generate digest using OpenSSL HMAC SHA384
     command = 'echo '+block_str+' | xxd -r -p | openssl dgst -sha256'
@@ -44,12 +45,17 @@ def generate_expected_wntz_digest():
         digest_str = digest_str[9:]
 
     g.write('DIGEST 0 = '+digest_str+'\n')
+    # print(digest_str)
+    digest_str = digest_str[0:48]
+    # print(digest_str)
 
     #Calculate chain of hashes for wntz
-    for i in range(14):
+    for i in range(1):
         #Generate digest using OpenSSL HMAC SHA384
-        print(str(format(i+1,'x')))
-        digest_str = '616263800000000000000000000000000000000000000'+str(format(i+1,'x'))+digest_str
+        #print(str(format(i+1,'x')))
+        if i < 20:
+            print(digest_str)
+        digest_str = '61626380000000000000000000000000000000000000'+str(format(i+1,'02x'))+digest_str
         command = 'echo '+digest_str+' | xxd -r -p | openssl dgst -sha256'
         digest = subprocess.check_output(command, shell=True)
         digest_str = str(digest)
@@ -60,6 +66,9 @@ def generate_expected_wntz_digest():
         else:
             digest_str = digest_str.rstrip()
             digest_str = digest_str[9:]
+
+        digest_str = digest_str[0:48]
+        # print(digest_str)
 
     g.write('DIGEST = '+digest_str+'\n')
     h.write('DIGEST = '+digest_str+'\n')

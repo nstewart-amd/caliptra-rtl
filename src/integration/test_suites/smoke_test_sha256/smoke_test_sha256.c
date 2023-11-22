@@ -80,7 +80,25 @@ void main() {
                                     0xB410FF61,
                                     0xF20015AD};
 
-    uint32_t expected_wntz_digest[] = { 0x878c3a97,
+    uint32_t expected_wntz_digest_w1_256[] = { 0xba7816bf,
+                                        0x8f01cfea,
+                                        0x414140de,
+                                        0x5dae2223,
+                                        0xb00361a3,
+                                        0x96177a9c,
+                                        0xb410ff61,
+                                        0xf20015ad};
+
+    uint32_t expected_wntz_digest_w2_256[] = { 0x1abdf685,
+                                        0x6e4cdf18,
+                                        0x146c6177,
+                                        0xcd5968ab,
+                                        0xd20795da,
+                                        0x2a787c72,
+                                        0x6bc77346,
+                                        0x18fa944c};
+
+    uint32_t expected_wntz_digest_w4_256[] = { 0x878c3a97,
                                         0x60a60fc2,
                                         0x52a91561,
                                         0xdba6f179,
@@ -88,7 +106,52 @@ void main() {
                                         0xaa1733c6,
                                         0x60c4a965,
                                         0x03780f5f};
-                                    
+
+    uint32_t expected_wntz_digest_w8_256[] = { 0xc625ea15,
+                                        0x97b6d15a,
+                                        0xcaf48a17,
+                                        0x06dfaa5c,
+                                        0xe6efee36,
+                                        0x05d68e7a,
+                                        0x83f90d36,
+                                        0x4020542e};
+
+    
+    uint32_t expected_wntz_digest_w1_192[] = { 0xba7816bf,
+                                        0x8f01cfea,
+                                        0x414140de,
+                                        0x5dae2223,
+                                        0xb00361a3,
+                                        0x96177a9c,
+                                        0x00000000,
+                                        0x00000000};
+
+    uint32_t expected_wntz_digest_w2_192[] = { 0x084016e3,
+                                        0xe81ec95f,
+                                        0x86c87e81,
+                                        0x65d76ed5,
+                                        0x857e1b44,
+                                        0x79b63cc3,
+                                        0x00000000,
+                                        0x00000000};
+
+    uint32_t expected_wntz_digest_w4_192[] = { 0x70f30884,
+                                        0x56d63307,
+                                        0x4ec50460,
+                                        0x0db5e4ed,
+                                        0x16761114,
+                                        0x80a15717,
+                                        0x00000000,
+                                        0x00000000};
+
+    uint32_t expected_wntz_digest_w8_192[] = { 0x04a8e0b8,
+                                        0xc9ab79ee,
+                                        0xe186636e,
+                                        0x61441571,
+                                        0x56c44204,
+                                        0x0278a626,
+                                        0x00000000,
+                                        0x00000000};
 
 
     // Entry message
@@ -106,11 +169,62 @@ void main() {
     for (int i = 0; i < sha256_block.data_size; i++)
         sha256_block.data[i] = block_data[i];
 
+    // sha256_digest.data_size = 8;
+    // for (int i = 0; i < sha256_digest.data_size; i++)
+    //     sha256_digest.data[i] = expected_wntz_digest_w1_256[i];
+
+    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 1, 1, sha256_digest);
+    // sha256_zeroize();
+
+    // sha256_digest.data_size = 8;
+    // for (int i = 0; i < sha256_digest.data_size; i++)
+    //     sha256_digest.data[i] = expected_wntz_digest_w2_256[i];
+
+    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 2, 1, sha256_digest);
+    // sha256_zeroize();
+
+    // sha256_digest.data_size = 8;
+    // for (int i = 0; i < sha256_digest.data_size; i++)
+    //     sha256_digest.data[i] = expected_wntz_digest_w4_256[i];
+
+    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 4, 1, sha256_digest);
+    // sha256_zeroize();
+
+    // sha256_digest.data_size = 8;
+    // for (int i = 0; i < sha256_digest.data_size; i++)
+    //     sha256_digest.data[i] = expected_wntz_digest_w8_256[i];
+
+    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 8, 1, sha256_digest);
+    // sha256_zeroize();
+
+    //--------------------------------------------------------------------
+
     sha256_digest.data_size = 8;
     for (int i = 0; i < sha256_digest.data_size; i++)
-        sha256_digest.data[i] = expected_wntz_digest[i];
+        sha256_digest.data[i] = expected_wntz_digest_w1_192[i];
 
-    sha256_flow(sha256_block, SHA256_MODE_SHA_256, sha256_digest);
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 1, 0, sha256_digest);
+    sha256_zeroize();
+
+    // sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w2_192[i];
+
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 2, 0, sha256_digest);
+    sha256_zeroize();
+
+    sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w4_192[i];
+
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 4, 0, sha256_digest);
+    sha256_zeroize();
+
+    sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w8_192[i];
+
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 8, 0, sha256_digest);
     sha256_zeroize();
 
     // Write 0xff to STDOUT for TB to terminate test.
