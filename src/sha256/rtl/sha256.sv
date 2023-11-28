@@ -161,7 +161,7 @@ module sha256
 
       core_init = wntz_init;
       core_next = wntz_next;
-      core_mode = mode_reg;
+      core_mode = 1'b1; //always SHA256 for Winternitz. Digest is truncated based on wntz_n_mode
     end else begin
       core_block = {block_reg[00], block_reg[01], block_reg[02], block_reg[03],
                     block_reg[04], block_reg[05], block_reg[06], block_reg[07],
@@ -283,11 +283,20 @@ module sha256
   // active low reset. All registers have write enable.
   //----------------------------------------------------------------
   always_comb begin
-    unique casez (wntz_n_mode)
-      0: get_mask = {{6{32'hffff_ffff}}, {2{32'h0000_0000}}};
-      1: get_mask = {8{32'hffff_ffff}};
-      default: get_mask = {8{32'hffff_ffff}};
-    endcase
+    if (wntz_mode) begin
+      unique casez (wntz_n_mode)
+        0: get_mask = {{6{32'hffff_ffff}}, {2{32'h0000_0000}}};
+        1: get_mask = {8{32'hffff_ffff}};
+        default: get_mask = {8{32'hffff_ffff}};
+      endcase
+    end
+    else begin
+      unique casez (mode_reg)
+        0: get_mask = {{7{32'hffff_ffff}}, {1{32'h0000_0000}}};
+        1: get_mask = {8{32'hffff_ffff}};
+        default: get_mask = {8{32'hffff_ffff}};
+      endcase
+    end
   end
   always @ (posedge clk or negedge reset_n)
     begin : reg_update
@@ -307,7 +316,7 @@ module sha256
         core_digest_valid_reg <= core_digest_valid;
 
         if (core_digest_valid & ~digest_valid_reg)
-          digest_reg <= core_digest & get_mask;
+          digest_reg <= wntz_mode ? core_digest & get_mask : core_digest;
       end
     end // reg_update
 

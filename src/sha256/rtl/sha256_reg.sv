@@ -669,7 +669,7 @@ module sha256_reg (
     end
     always_ff @(posedge clk or negedge hwif_in.reset_b) begin
         if(~hwif_in.reset_b) begin
-            field_storage.SHA256_CTRL.WNTZ_N_MODE.value <= 'h0;
+            field_storage.SHA256_CTRL.WNTZ_N_MODE.value <= 'h1;
         end else if(field_combo.SHA256_CTRL.WNTZ_N_MODE.load_next) begin
             field_storage.SHA256_CTRL.WNTZ_N_MODE.value <= field_combo.SHA256_CTRL.WNTZ_N_MODE.next;
         end

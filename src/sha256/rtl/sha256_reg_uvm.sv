@@ -109,7 +109,7 @@ package sha256_reg_uvm;
             this.WNTZ_W = new("WNTZ_W");
             this.WNTZ_W.configure(this, 4, 5, "WO", 0, 'h4, 1, 1, 0);
             this.WNTZ_N_MODE = new("WNTZ_N_MODE");
-            this.WNTZ_N_MODE.configure(this, 1, 9, "WO", 0, 'h0, 1, 1, 0);
+            this.WNTZ_N_MODE.configure(this, 1, 9, "WO", 0, 'h1, 1, 1, 0);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
                 foreach(INIT_bit_cg[bt]) INIT_bit_cg[bt] = new();
                 foreach(NEXT_bit_cg[bt]) NEXT_bit_cg[bt] = new();
