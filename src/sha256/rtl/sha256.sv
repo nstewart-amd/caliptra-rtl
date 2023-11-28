@@ -203,7 +203,7 @@ module sha256
   assign wntz_1st_blk  = (wntz_fsm == WNTZ_1ST);
   assign wntz_blk_done = core_digest_valid & ~core_digest_valid_reg;
   assign wntz_next     = 1'b0;
-  assign wntz_w_invalid = !(wntz_w inside {'h1, 'h2, 'h4, 'h8});
+  assign wntz_w_invalid = wntz_mode & !(wntz_w inside {'h1, 'h2, 'h4, 'h8});
 
   // always_comb begin
   //   case (wntz_fsm)
@@ -326,8 +326,8 @@ module sha256
     mode_reg = hwif_out.SHA256_CTRL.MODE.value;
     zeroize_reg = hwif_out.SHA256_CTRL.ZEROIZE.value || debugUnlock_or_scan_mode_switch;
     wntz_mode = hwif_out.SHA256_CTRL.WNTZ_MODE.value;
-    wntz_n_mode = 0; //hwif_out.SHA256_CTRL.WNTZ_N_MODE.value;
-    wntz_w = 4; //hwif_out.SHA256_CTRL.WNTZ_W.value;
+    wntz_n_mode = hwif_out.SHA256_CTRL.WNTZ_N_MODE.value;
+    wntz_w = hwif_out.SHA256_CTRL.WNTZ_W.value;
 
     hwif_in.SHA256_STATUS.READY.next = ready_reg;
     hwif_in.SHA256_STATUS.VALID.next = digest_valid_reg;
