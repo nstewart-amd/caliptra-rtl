@@ -625,6 +625,9 @@ module sha256_reg (
         if(decoded_reg_strb.SHA256_CTRL && decoded_req_is_wr) begin // SW write
             next_c = (field_storage.SHA256_CTRL.WNTZ_MODE.value & ~decoded_wr_biten[4:4]) | (decoded_wr_data[4:4] & decoded_wr_biten[4:4]);
             load_next_c = '1;
+        end else if(1) begin // singlepulse clears back to 0
+            next_c = '0;
+            load_next_c = '1;
         end
         field_combo.SHA256_CTRL.WNTZ_MODE.next = next_c;
         field_combo.SHA256_CTRL.WNTZ_MODE.load_next = load_next_c;
