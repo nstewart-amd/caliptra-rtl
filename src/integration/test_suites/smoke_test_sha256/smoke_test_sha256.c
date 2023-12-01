@@ -71,6 +71,22 @@ void main() {
                              0x00000000,
                              0x00000000,
                              0x00000018};
+    uint32_t block_data_test[] = {0x9ae630b6,
+                                  0x793179f2,
+                                  0xa7d966d8,
+                                  0xcd080611,
+                                  0xec6cb36b,
+                                  0x91757f66,
+                                  0x7e915f72,
+                                  0x27cdcbcf,
+                                  0x285ba74b,
+                                  0x84800000,
+                                  0x00000000,
+                                  0x00000000,
+                                  0x00000000,
+                                  0x00000000,
+                                  0x00000000,
+                                  0x00000128};
     uint32_t expected_digest[] =   {0xBA7816BF,
                                     0x8F01CFEA,
                                     0x414140DE,
@@ -79,6 +95,14 @@ void main() {
                                     0x96177A9C,
                                     0xB410FF61,
                                     0xF20015AD};
+    uint32_t expected_digest_test[] = {0xfc6daf01,
+                                    0xc7eb60ea,
+                                    0x21282001,
+                                    0x216dddcd,
+                                    0x04a33463,
+                                    0x93b26a15,
+                                    0x5fd35490,
+                                    0xa3f03ffe};
 
     uint32_t expected_wntz_digest_w1_256[] = { 0xba7816bf,
                                         0x8f01cfea,
@@ -169,33 +193,37 @@ void main() {
     for (int i = 0; i < sha256_block.data_size; i++)
         sha256_block.data[i] = block_data[i];
 
-    // sha256_digest.data_size = 8;
-    // for (int i = 0; i < sha256_digest.data_size; i++)
-    //     sha256_digest.data[i] = expected_wntz_digest_w1_256[i];
+    // sha256_block.data_size = 16;
+    // for (int i = 0; i < sha256_block.data_size; i++)
+    //     sha256_block.data[i] = block_data_test[i];
 
-    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 1, 1, sha256_digest);
-    // sha256_zeroize();
+    sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w1_256[i];
 
-    // sha256_digest.data_size = 8;
-    // for (int i = 0; i < sha256_digest.data_size; i++)
-    //     sha256_digest.data[i] = expected_wntz_digest_w2_256[i];
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 1, 1, sha256_digest);
+    sha256_zeroize();
 
-    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 2, 1, sha256_digest);
-    // sha256_zeroize();
+    sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w2_256[i];
 
-    // sha256_digest.data_size = 8;
-    // for (int i = 0; i < sha256_digest.data_size; i++)
-    //     sha256_digest.data[i] = expected_wntz_digest_w4_256[i];
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 2, 1, sha256_digest);
+    sha256_zeroize();
 
-    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 4, 1, sha256_digest);
-    // sha256_zeroize();
+    sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w4_256[i];
 
-    // sha256_digest.data_size = 8;
-    // for (int i = 0; i < sha256_digest.data_size; i++)
-    //     sha256_digest.data[i] = expected_wntz_digest_w8_256[i];
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 4, 1, sha256_digest);
+    sha256_zeroize();
 
-    // sha256_flow(sha256_block, SHA256_MODE_SHA_256, 8, 1, sha256_digest);
-    // sha256_zeroize();
+    sha256_digest.data_size = 8;
+    for (int i = 0; i < sha256_digest.data_size; i++)
+        sha256_digest.data[i] = expected_wntz_digest_w8_256[i];
+
+    sha256_flow(sha256_block, SHA256_MODE_SHA_256, 8, 1, sha256_digest);
+    sha256_zeroize();
 
     //--------------------------------------------------------------------
 
