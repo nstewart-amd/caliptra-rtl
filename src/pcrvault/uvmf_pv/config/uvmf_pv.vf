@@ -1,6 +1,6 @@
++define+MAP_PROT_ATTR
 +incdir+${UVM_HOME}/src
 +incdir+${UVM_HOME}/src/dpi
-+define+MAP_PROT_ATTR
 +incdir+${QUESTA_MVC_HOME}/questa_mvc_src/sv
 +incdir+${QUESTA_MVC_HOME}/questa_mvc_src/sv/ahb
 +incdir+${QUESTA_MVC_HOME}/questa_mvc_src/sv/ahb/modules
