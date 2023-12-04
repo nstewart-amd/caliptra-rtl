@@ -2,7 +2,7 @@
 //
 // Updated by Caliptra team to modify data access width
 //
-// sha256.v
+// sha256.sv
 // --------
 // Top level wrapper for the SHA-256 hash function providing
 // a simple memory like interface with 32 bit data access.
