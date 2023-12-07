@@ -4,10 +4,9 @@ trigger: none
 pr: none
 schedules:
   - cron: '0 8 * * *'
-    displayName: Nightly Random Regression
+    displayName: Nightly ECC Radix48 Random Regression
     branches:
       include:
-        - master
         - user/dev/mojtabab/ecc_radix48
     always: true
 
