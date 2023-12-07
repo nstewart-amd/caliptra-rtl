@@ -4,10 +4,10 @@ trigger: none
 pr: none
 schedules:
   - cron: '0 8 * * *'
-    displayName: Nightly Random Regression
+    displayName: Nightly Random Regression ECC Radix48
     branches:
       include:
-        - master
+        - user/dev/mojtabab/ecc_radix48
     always: true
 
 # Point to another repository for the pipeline template
