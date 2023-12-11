@@ -28,6 +28,7 @@ def generate_expected_wntz_digest(w):
     msg = ""
     msg_str = ""
     digest_str = ""
+    msg_str_for_chain = ""
 
     for line in f:
         if(line[0:8] == "BLOCK = "):
@@ -36,6 +37,7 @@ def generate_expected_wntz_digest(w):
     #print(block_str) 
     # block_str = '9e14f94af2b142af655bb024501ff00700000000000009aad490eb72b80d40b39ef87a17f53b21f0345a6aaebccb6b'
     block_str = '9ae630b6793179f2a7d966d8cd080611ec6cb36b91757f667e915f7227cdcbcf285ba74b84'
+    #------------------------------------------------------------------------
     #Generate random length msg (upper limit of length is 512 bytes)
     num_bytes = random.randrange(1,64)
     command = 'openssl rand -hex '+str(num_bytes)
@@ -47,10 +49,25 @@ def generate_expected_wntz_digest(w):
         msg_str = msg_str[2:-3]
     else:
         msg_str = msg_str.rstrip()
-    print("msg = "+msg_str)
+    print("msg = "+msg_str+'\n'+"msg len = "+str(len(msg_str)))
+
+    if len(msg_str) >= 44:
+        msg_str_for_chain = msg_str[0:44]
+    else:
+        msg_str_for_chain = msg_str + '80'
+        if len(msg_str_for_chain) >= 44:
+            msg_str_for_chain = msg_str_for_chain[0:44]
+        else:
+            pad_chars = 44 - len(msg_str_for_chain)
+            print("pad chars = "+str(pad_chars))
+            msg_str_for_chain = msg_str_for_chain + (str(0)*pad_chars)
+            print("string of 0s = "+str(0)*pad_chars)
+    print("msg_str_for_chain = "+msg_str_for_chain)
+    #------------------------------------------------------------------------
 
     #Generate digest using OpenSSL HMAC SHA384
-    command = 'echo '+block_str+' | xxd -r -p | openssl dgst -sha256'
+    # command = 'echo '+block_str+' | xxd -r -p | openssl dgst -sha256'
+    command = 'echo '+msg_str+' | xxd -r -p | openssl dgst -sha256'
     digest = subprocess.check_output(command, shell=True)
     digest_str = str(digest)
 
@@ -71,7 +88,8 @@ def generate_expected_wntz_digest(w):
         #Generate digest using OpenSSL HMAC SHA384
         # print("j = "+str(j)+":"+digest_str)
         # digest_str = '61626380000000000000000000000000000000000000'+str(format(j+1,'02x'))+digest_str
-        digest_str = '9ae630b6793179f2a7d966d8cd080611ec6cb36b9175'+str(format(j+1,'02x'))+digest_str
+        # digest_str = '9ae630b6793179f2a7d966d8cd080611ec6cb36b9175'+str(format(j+1,'02x'))+digest_str
+        digest_str = msg_str_for_chain+str(format(j+1,'02x'))+digest_str
         command = 'echo '+digest_str+' | xxd -r -p | openssl dgst -sha256'
         digest = subprocess.check_output(command, shell=True)
         digest_str = str(digest)
@@ -90,7 +108,7 @@ def generate_expected_wntz_digest(w):
     h.write('DIGEST = '+digest_str+'\n')
     h.write("------------------------\n")
 
-    
+    print("digest_str = "+digest_str)
 
 
     f.close()
