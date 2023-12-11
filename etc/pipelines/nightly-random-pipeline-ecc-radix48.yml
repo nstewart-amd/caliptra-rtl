@@ -7,7 +7,7 @@ schedules:
     displayName: Nightly Random Regression ECC Radix48
     branches:
       include:
-        - user/dev/mojtabab/ecc_radix48
+        - user/dev/kupadhyayula/ecc_radix48_regress
     always: true
 
 # Point to another repository for the pipeline template
