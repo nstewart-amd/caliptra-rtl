@@ -744,7 +744,6 @@ endgenerate //IV_NO
         w_ln = $urandom_range(3, 0);
         w = 2**w_ln;
         n = $urandom_range(0, 1);
-        $display("SERVICES: w = %d, n = %d", w, n);
 
         $system($sformatf("python sha256_wntz_test_gen.py %d %d", w, n));
         file_name = "sha256_wntz_test_vector.txt";
