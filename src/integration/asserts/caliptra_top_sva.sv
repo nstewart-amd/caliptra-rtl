@@ -31,6 +31,7 @@
 `define DOE_REG_PATH    `DOE_INST_PATH.i_doe_reg
 `define SERVICES_PATH   `CPTRA_TB_TOP_NAME.tb_services_i
 `define SHA512_PATH     `CPTRA_TOP_PATH.sha512.sha512_inst
+`define SHA256_PATH     `CPTRA_TOP_PATH.sha256.sha256_inst
 `define HMAC_PATH       `CPTRA_TOP_PATH.hmac.hmac_inst
 `define ECC_PATH        `CPTRA_TOP_PATH.ecc_top1.ecc_dsa_ctrl_i
 `define ECC_REG_PATH    `CPTRA_TOP_PATH.ecc_top1.ecc_reg1
@@ -226,6 +227,19 @@ module caliptra_top_sva
   endgenerate
 
   `ifndef VERILATOR
+  generate
+    begin: SHA256_WNTZ_data_check
+      for(genvar dword = 0; dword < 8; dword++) begin
+        SHA256_WNTZ_data_check: assert property (
+                                            @(posedge `SVA_RDC_CLK)
+                                            //disable iff (`CPTRA_TOP_PATH.)
+                                            (`SERVICES_PATH.WriteData == 'hdd && `SERVICES_PATH.mailbox_write) |=> ##[1:$] $rose(`SHA256_PATH.digest_valid_reg) |=> (`SHA256_PATH.digest_reg[dword] == `SERVICES_PATH.sha256_wntz_test_vector.sha256_wntz_digest[dword])
+                                          )
+                                  else $display("SVA ERROR: SHA256 wntz digest %h does not match expected digest %h!", `SHA256_PATH.digest_reg[dword], `SERVICES_PATH.sha256_wntz_test_vector.sha256_wntz_digest[dword]);
+      end //for
+    end //data check
+  endgenerate
+
   generate
     begin: UDS_data_check
     for(genvar dword = 0; dword < `CLP_OBF_UDS_DWORDS; dword++) begin
