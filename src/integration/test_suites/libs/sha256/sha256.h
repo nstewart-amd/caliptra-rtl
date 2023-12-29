@@ -27,5 +27,6 @@ typedef struct {
 
 void sha256_flow(sha256_io block, uint8_t mode, uint8_t wntz_w, uint8_t wntz_n, sha256_io digest);
 void sha256_zeroize();
+void sha256_flow_wntz(uint8_t mode);
 
 #endif
