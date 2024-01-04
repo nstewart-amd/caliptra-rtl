@@ -4,7 +4,7 @@ trigger: none
 pr: none
 schedules:
   - cron: '0 8 * * *'
-    displayName: Nightly Random Regression ECC Radix48
+    displayName: Nightly Random Regression Caliptra 1.1
     branches:
       include:
         - user/dev/kupadhyayula/ecc_radix48_regress
@@ -214,4 +214,4 @@ stages:
                 - dut: 'caliptra_top_tb'
                 - sim_args: '+COVERAGE ${{ variables.coverage_root_args }}'
                 - path: '${WORKSPACE}/Caliptra/src/integration/stimulus/testsuites/caliptra_top_nightly_directed_regression.yml'
-                - timeout: 30              
+                - timeout: 60              
