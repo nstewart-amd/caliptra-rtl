@@ -151,6 +151,26 @@ package ecc_reg_pkg;
     } ecc_reg__ECC_PRIVKEY_IN__in_t;
 
     typedef struct packed{
+        logic [31:0] next;
+        logic we;
+        logic hwclr;
+    } ecc_reg__ECC_DH_SHARED_X__DH_SHARED_X__in_t;
+
+    typedef struct packed{
+        ecc_reg__ECC_DH_SHARED_X__DH_SHARED_X__in_t DH_SHARED_X;
+    } ecc_reg__ECC_DH_SHARED_X__in_t;
+
+    typedef struct packed{
+        logic [31:0] next;
+        logic we;
+        logic hwclr;
+    } ecc_reg__ECC_DH_SHARED_Y__DH_SHARED_Y__in_t;
+
+    typedef struct packed{
+        ecc_reg__ECC_DH_SHARED_Y__DH_SHARED_Y__in_t DH_SHARED_Y;
+    } ecc_reg__ECC_DH_SHARED_Y__in_t;
+
+    typedef struct packed{
         logic hwclr;
     } kv_read_ctrl_reg__read_en__in_t;
 
@@ -225,6 +245,8 @@ package ecc_reg_pkg;
         ecc_reg__ECC_IV__in_t [12-1:0]ECC_IV;
         ecc_reg__ECC_NONCE__in_t [12-1:0]ECC_NONCE;
         ecc_reg__ECC_PRIVKEY_IN__in_t [12-1:0]ECC_PRIVKEY_IN;
+        ecc_reg__ECC_DH_SHARED_X__in_t [12-1:0]ECC_DH_SHARED_X;
+        ecc_reg__ECC_DH_SHARED_Y__in_t [12-1:0]ECC_DH_SHARED_Y;
         __kv_read_ctrl_reg__in_t ecc_kv_rd_pkey_ctrl;
         __kv_status_reg__in_t ecc_kv_rd_pkey_status;
         __kv_read_ctrl_reg__in_t ecc_kv_rd_seed_ctrl;
@@ -235,7 +257,7 @@ package ecc_reg_pkg;
     } ecc_reg__in_t;
 
     typedef struct packed{
-        logic [1:0] value;
+        logic [2:0] value;
     } ecc_reg__ECC_CTRL__CTRL__out_t;
 
     typedef struct packed{
