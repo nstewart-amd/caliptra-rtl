@@ -62,7 +62,7 @@ module ecc_top_tb
       operand_t     seed;
       operand_t     nonce;
       operand_t     IV;
-      affn_point_t  DH_sharedkey;
+      operand_t     DH_sharedkey;
   } test_vector_t;
 
   test_vector_t [TEST_VECTOR_NUM-1:0] test_vectors;
@@ -1183,8 +1183,7 @@ module ecc_top_tb
       test_vector.R              = 0;
       test_vector.S              = 0;
       test_vector.IV             = 384'h8056c5bb57f41f73082888b234fcda320a33250b5da012ba1fdb4924355ae679012d81d2c08fc0f8634c708a4833232f;
-      test_vector.DH_sharedkey.x = 384'h5EA1FC4AF7256D2055981B110575E0A8CAE53160137D904C59D926EB1B8456E427AA8A4540884C37DE159A58028ABC0E;
-      test_vector.DH_sharedkey.y = 384'h0CC59E4B046414A81C8A3BDFDCA92526C48769DD8D3127CAA99B3632D1913942DE362EAFAA962379374D9F3F066841CA;
+      test_vector.DH_sharedkey   = 384'h5EA1FC4AF7256D2055981B110575E0A8CAE53160137D904C59D926EB1B8456E427AA8A4540884C37DE159A58028ABC0E;
 
       ecc_DH_sharedkey_test(0, test_vector);
 
@@ -1198,8 +1197,7 @@ module ecc_top_tb
       test_vector.R              = 0;
       test_vector.S              = 0;
       test_vector.IV             = 384'hddd0760448d42d8a43af45af836fce4de8be06b485e9b61b827c2f13173923e06a739f040649a667bf3b828246baa5a5;
-      test_vector.DH_sharedkey.x = 384'h5EA1FC4AF7256D2055981B110575E0A8CAE53160137D904C59D926EB1B8456E427AA8A4540884C37DE159A58028ABC0E;
-      test_vector.DH_sharedkey.y = 384'h0CC59E4B046414A81C8A3BDFDCA92526C48769DD8D3127CAA99B3632D1913942DE362EAFAA962379374D9F3F066841CA;
+      test_vector.DH_sharedkey   = 384'h5EA1FC4AF7256D2055981B110575E0A8CAE53160137D904C59D926EB1B8456E427AA8A4540884C37DE159A58028ABC0E;
 
       ecc_DH_sharedkey_test(1, test_vector);
   endtask
@@ -1213,7 +1211,7 @@ module ecc_top_tb
                         input test_vector_t test_vector);
     reg [31  : 0]   start_time;
     reg [31  : 0]   end_time;
-    affn_point_t    DH_sharedkey;
+    operand_t       DH_sharedkey;
     
     begin
       wait_ready();
@@ -1237,13 +1235,9 @@ module ecc_top_tb
 
       wait_ready();
 
-      $display("*** TC %0d reading SHARED KEY X", tc_number);
-      read_block(`ECC_REG_ECC_DH_SHARED_X_0);
-      DH_sharedkey.x = reg_read_data;
-
-      $display("*** TC %0d reading SHARED KEY Y", tc_number);
-      read_block(`ECC_REG_ECC_DH_SHARED_Y_0);
-      DH_sharedkey.y = reg_read_data;
+      $display("*** TC %0d reading SHARED KEY", tc_number);
+      read_block(`ECC_REG_ECC_DH_SHARED_KEY_0);
+      DH_sharedkey = reg_read_data;
       
       trig_ECC(`ECC_REG_ECC_CTRL_ZEROIZE_MASK); //zeroize
 
@@ -1259,10 +1253,8 @@ module ecc_top_tb
       else
         begin
           $display("*** ERROR: TC %0d DH shared key NOT successful.", tc_number);
-          $display("Expected_x: 0x%96x", test_vector.DH_sharedkey.x);
-          $display("Got:        0x%96x", DH_sharedkey.x);
-          $display("Expected_y: 0x%96x", test_vector.DH_sharedkey.y);
-          $display("Got:        0x%96x", DH_sharedkey.y);
+          $display("Expected_x: 0x%96x", test_vector.DH_sharedkey);
+          $display("Got:        0x%96x", DH_sharedkey);
           $display("");
 
           error_ctr = error_ctr + 1;

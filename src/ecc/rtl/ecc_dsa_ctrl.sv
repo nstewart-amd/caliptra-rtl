@@ -118,8 +118,7 @@ module ecc_dsa_ctrl
     logic hw_scalar_PK_we;
     logic hw_verify_r_we;
     logic hw_pk_chk_we;
-    logic hw_sharedx_we;
-    logic hw_sharedy_we;    
+    logic hw_sharedkey_we;
     logic scalar_G_sel;
 
     logic ecc_valid_reg;
@@ -441,15 +440,9 @@ module ecc_dsa_ctrl
         end
 
         for (int dword=0; dword < 12; dword++)begin
-            hwif_in.ECC_DH_SHARED_X[dword].DH_SHARED_X.we = hw_sharedx_we & !zeroize_reg;
-            hwif_in.ECC_DH_SHARED_X[dword].DH_SHARED_X.next = read_reg[11-dword];  
-            hwif_in.ECC_DH_SHARED_X[dword].DH_SHARED_X.hwclr = zeroize_reg;
-        end
-
-        for (int dword=0; dword < 12; dword++)begin
-            hwif_in.ECC_DH_SHARED_Y[dword].DH_SHARED_Y.we = hw_sharedy_we & !zeroize_reg;
-            hwif_in.ECC_DH_SHARED_Y[dword].DH_SHARED_Y.next = read_reg[11-dword];  
-            hwif_in.ECC_DH_SHARED_Y[dword].DH_SHARED_Y.hwclr = zeroize_reg;
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.we = hw_sharedkey_we & !zeroize_reg;
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.next = read_reg[11-dword];  
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.hwclr = zeroize_reg;
         end
     end
 
@@ -550,8 +543,7 @@ module ecc_dsa_ctrl
         hw_scalar_PK_we = 0;
         hw_verify_r_we = 0;
         hw_pk_chk_we = 0;
-        hw_sharedx_we = 0;
-        hw_sharedy_we = 0;
+        hw_sharedkey_we = 0;
         if ((prog_instr.opcode == DSA_UOP_RD_CORE) & (cycle_cnt == 0)) begin
             unique casez (prog_instr.reg_id)
                 PRIVKEY_ID      : hw_privkey_we = 1;
@@ -563,8 +555,7 @@ module ecc_dsa_ctrl
                 SCALAR_PK_ID    : hw_scalar_PK_we = 1;
                 VERIFY_R_ID     : hw_verify_r_we = 1;
                 PK_VALID_ID     : hw_pk_chk_we = 1;
-                DH_SHAREDX_ID   : hw_sharedx_we = 1;
-                DH_SHAREDY_ID   : hw_sharedy_we = 1;
+                DH_SHAREDKEY_ID : hw_sharedkey_we = 1;
                 default         : 
                     begin 
                         hw_privkey_we = 0;
@@ -576,8 +567,7 @@ module ecc_dsa_ctrl
                         hw_scalar_PK_we = 0;
                         hw_verify_r_we = 0;
                         hw_pk_chk_we = 0;
-                        hw_sharedx_we = 0;
-                        hw_sharedy_we = 0;
+                        hw_sharedkey_we = 0;
                     end
             endcase
         end

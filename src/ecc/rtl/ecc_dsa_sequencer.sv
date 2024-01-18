@@ -155,9 +155,8 @@ module ecc_dsa_sequencer
                     DH_SHARED_S+ 13 : douta <= {DSA_UOP_WR_CORE,        LAMBDA_ID,          UOP_OPR_LAMBDA};
                     DH_SHARED_S+ 14 : douta <= {DH_UOP_SHAREDKEY,       NOP_ID,             UOP_OPR_DONTCARE};
                     DH_SHARED_S+ 15 : douta <= {DSA_UOP_NOP,            NOP_ID,             UOP_OPR_DONTCARE};
-                    DH_SHARED_S+ 16 : douta <= {DSA_UOP_RD_CORE,        DH_SHAREDX_ID,      UOP_OPR_Qx_AFFN};
-                    DH_SHARED_S+ 17 : douta <= {DSA_UOP_RD_CORE,        DH_SHAREDY_ID,      UOP_OPR_Qy_AFFN};
-                    DH_SHARED_S+ 18 : douta <= {DSA_UOP_NOP,            NOP_ID,             UOP_OPR_DONTCARE};
+                    DH_SHARED_S+ 16 : douta <= {DSA_UOP_RD_CORE,        DH_SHAREDKEY_ID,    UOP_OPR_Qx_AFFN};
+                    DH_SHARED_S+ 17 : douta <= {DSA_UOP_NOP,            NOP_ID,             UOP_OPR_DONTCARE};
 
                     default :       douta <= {DSA_UOP_NOP,            NOP_ID,             UOP_OPR_DONTCARE};
                 endcase 

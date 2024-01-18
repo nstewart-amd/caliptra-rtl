@@ -469,17 +469,17 @@ package ecc_reg_uvm;
         endfunction : build
     endclass : ecc_reg__ECC_PRIVKEY_IN
 
-    // Reg - ecc_reg::ECC_DH_SHARED_X
-    class ecc_reg__ECC_DH_SHARED_X extends uvm_reg;
+    // Reg - ecc_reg::ECC_DH_SHARED_KEY
+    class ecc_reg__ECC_DH_SHARED_KEY extends uvm_reg;
         protected uvm_reg_data_t m_current;
         protected uvm_reg_data_t m_data;
         protected bit            m_is_read;
 
-        ecc_reg__ECC_DH_SHARED_X_bit_cg DH_SHARED_X_bit_cg[32];
-        ecc_reg__ECC_DH_SHARED_X_fld_cg fld_cg;
-        rand uvm_reg_field DH_SHARED_X;
+        ecc_reg__ECC_DH_SHARED_KEY_bit_cg DH_SHARED_KEY_bit_cg[32];
+        ecc_reg__ECC_DH_SHARED_KEY_fld_cg fld_cg;
+        rand uvm_reg_field DH_SHARED_KEY;
 
-        function new(string name = "ecc_reg__ECC_DH_SHARED_X");
+        function new(string name = "ecc_reg__ECC_DH_SHARED_KEY");
             super.new(name, 32, build_coverage(UVM_CVR_ALL));
         endfunction : new
         extern virtual function void sample_values();
@@ -489,45 +489,15 @@ package ecc_reg_uvm;
                                                       uvm_reg_map     map);
 
         virtual function void build();
-            this.DH_SHARED_X = new("DH_SHARED_X");
-            this.DH_SHARED_X.configure(this, 32, 0, "RO", 1, 'h0, 1, 1, 0);
+            this.DH_SHARED_KEY = new("DH_SHARED_KEY");
+            this.DH_SHARED_KEY.configure(this, 32, 0, "RO", 1, 'h0, 1, 1, 0);
             if (has_coverage(UVM_CVR_REG_BITS)) begin
-                foreach(DH_SHARED_X_bit_cg[bt]) DH_SHARED_X_bit_cg[bt] = new();
+                foreach(DH_SHARED_KEY_bit_cg[bt]) DH_SHARED_KEY_bit_cg[bt] = new();
             end
             if (has_coverage(UVM_CVR_FIELD_VALS))
                 fld_cg = new();
         endfunction : build
-    endclass : ecc_reg__ECC_DH_SHARED_X
-
-    // Reg - ecc_reg::ECC_DH_SHARED_Y
-    class ecc_reg__ECC_DH_SHARED_Y extends uvm_reg;
-        protected uvm_reg_data_t m_current;
-        protected uvm_reg_data_t m_data;
-        protected bit            m_is_read;
-
-        ecc_reg__ECC_DH_SHARED_Y_bit_cg DH_SHARED_Y_bit_cg[32];
-        ecc_reg__ECC_DH_SHARED_Y_fld_cg fld_cg;
-        rand uvm_reg_field DH_SHARED_Y;
-
-        function new(string name = "ecc_reg__ECC_DH_SHARED_Y");
-            super.new(name, 32, build_coverage(UVM_CVR_ALL));
-        endfunction : new
-        extern virtual function void sample_values();
-        extern protected virtual function void sample(uvm_reg_data_t  data,
-                                                      uvm_reg_data_t  byte_en,
-                                                      bit             is_read,
-                                                      uvm_reg_map     map);
-
-        virtual function void build();
-            this.DH_SHARED_Y = new("DH_SHARED_Y");
-            this.DH_SHARED_Y.configure(this, 32, 0, "RO", 1, 'h0, 1, 1, 0);
-            if (has_coverage(UVM_CVR_REG_BITS)) begin
-                foreach(DH_SHARED_Y_bit_cg[bt]) DH_SHARED_Y_bit_cg[bt] = new();
-            end
-            if (has_coverage(UVM_CVR_FIELD_VALS))
-                fld_cg = new();
-        endfunction : build
-    endclass : ecc_reg__ECC_DH_SHARED_Y
+    endclass : ecc_reg__ECC_DH_SHARED_KEY
 
     // Reg - kv_read_ctrl_reg
     class kv_read_ctrl_reg extends uvm_reg;
@@ -1181,8 +1151,7 @@ package ecc_reg_uvm;
         rand ecc_reg__ECC_IV ECC_IV[12];
         rand ecc_reg__ECC_NONCE ECC_NONCE[12];
         rand ecc_reg__ECC_PRIVKEY_IN ECC_PRIVKEY_IN[12];
-        rand ecc_reg__ECC_DH_SHARED_X ECC_DH_SHARED_X[12];
-        rand ecc_reg__ECC_DH_SHARED_Y ECC_DH_SHARED_Y[12];
+        rand ecc_reg__ECC_DH_SHARED_KEY ECC_DH_SHARED_KEY[12];
         rand kv_read_ctrl_reg ecc_kv_rd_pkey_ctrl;
         rand kv_status_reg ecc_kv_rd_pkey_status;
         rand kv_read_ctrl_reg ecc_kv_rd_seed_ctrl;
@@ -1298,19 +1267,12 @@ package ecc_reg_uvm;
                 this.ECC_PRIVKEY_IN[i0].build();
                 this.default_map.add_reg(this.ECC_PRIVKEY_IN[i0], 'h580 + i0*'h4);
             end
-            foreach(this.ECC_DH_SHARED_X[i0]) begin
-                this.ECC_DH_SHARED_X[i0] = new($sformatf("ECC_DH_SHARED_X[%0d]", i0));
-                this.ECC_DH_SHARED_X[i0].configure(this);
+            foreach(this.ECC_DH_SHARED_KEY[i0]) begin
+                this.ECC_DH_SHARED_KEY[i0] = new($sformatf("ECC_DH_SHARED_KEY[%0d]", i0));
+                this.ECC_DH_SHARED_KEY[i0].configure(this);
                 
-                this.ECC_DH_SHARED_X[i0].build();
-                this.default_map.add_reg(this.ECC_DH_SHARED_X[i0], 'h600 + i0*'h4);
-            end
-            foreach(this.ECC_DH_SHARED_Y[i0]) begin
-                this.ECC_DH_SHARED_Y[i0] = new($sformatf("ECC_DH_SHARED_Y[%0d]", i0));
-                this.ECC_DH_SHARED_Y[i0].configure(this);
-                
-                this.ECC_DH_SHARED_Y[i0].build();
-                this.default_map.add_reg(this.ECC_DH_SHARED_Y[i0], 'h680 + i0*'h4);
+                this.ECC_DH_SHARED_KEY[i0].build();
+                this.default_map.add_reg(this.ECC_DH_SHARED_KEY[i0], 'h600 + i0*'h4);
             end
             this.ecc_kv_rd_pkey_ctrl = new("ecc_kv_rd_pkey_ctrl");
             this.ecc_kv_rd_pkey_ctrl.configure(this);
