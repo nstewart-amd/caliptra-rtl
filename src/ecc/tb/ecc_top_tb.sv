@@ -34,9 +34,10 @@ module ecc_top_tb
   string      ecc_test_vector_file; // Input test vector file
   string      ecc_test_to_run;      // ECC tests - default, ECC_normal_test, ECC_otf_reset_test
 
-  localparam ECC_CMD_KEYGEN              = 2'b01;
-  localparam ECC_CMD_SIGNING             = 2'b10;
-  localparam ECC_CMD_VERIFYING           = 2'b11;
+  localparam ECC_CMD_KEYGEN              = 3'b001;
+  localparam ECC_CMD_SIGNING             = 3'b010;
+  localparam ECC_CMD_VERIFYING           = 3'b011;
+  localparam ECC_CMD_DH_SHARED           = 3'b100;
   
   parameter           R_WIDTH                   = 384;
   typedef bit         [R_WIDTH-1:0]             r_t;
@@ -61,6 +62,7 @@ module ecc_top_tb
       operand_t     seed;
       operand_t     nonce;
       operand_t     IV;
+      operand_t     DH_sharedkey;
   } test_vector_t;
 
   test_vector_t [TEST_VECTOR_NUM-1:0] test_vectors;
@@ -1164,6 +1166,103 @@ module ecc_top_tb
 
 
   //----------------------------------------------------------------
+  // DH_test_vectors()
+  //
+  //----------------------------------------------------------------
+  task ecc_DH_test_vectors();
+      test_vector_t test_vector;
+      // test vectors from https://datatracker.ietf.org/doc/html/rfc5114.html#page-19
+
+      // TEST VECTOR #1
+      test_vector.hashed_msg     = 0;
+      test_vector.privkey        = 384'h52D1791FDB4B70F89C0F00D456C2F7023B6125262C36A7DF1F80231121CCE3D39BE52E00C194A4132C4A6C768BCD94D2;
+      test_vector.pubkey.x       = 384'h793148F1787634D5DA4C6D9074417D05E057AB62F82054D10EE6B0403D6279547E6A8EA9D1FD77427D016FE27A8B8C66;
+      test_vector.pubkey.y       = 384'hC6C41294331D23E6F480F4FB4CD40504C947392E94F4C3F06B8F398BB29E42368F7A685923DE3B67BACED214A1A1D128;
+      test_vector.seed           = 0;
+      test_vector.nonce          = 0;
+      test_vector.R              = 0;
+      test_vector.S              = 0;
+      test_vector.IV             = 384'h8056c5bb57f41f73082888b234fcda320a33250b5da012ba1fdb4924355ae679012d81d2c08fc0f8634c708a4833232f;
+      test_vector.DH_sharedkey   = 384'h5EA1FC4AF7256D2055981B110575E0A8CAE53160137D904C59D926EB1B8456E427AA8A4540884C37DE159A58028ABC0E;
+
+      ecc_DH_sharedkey_test(0, test_vector);
+
+      // TEST VECTOR #2
+      test_vector.hashed_msg     = 0;
+      test_vector.privkey        = 384'hD27335EA71664AF244DD14E9FD1260715DFD8A7965571C48D709EE7A7962A156D706A90CBCB5DF2986F05FEADB9376F1;
+      test_vector.pubkey.x       = 384'h5CD42AB9C41B5347F74B8D4EFB708B3D5B36DB65915359B44ABC17647B6B9999789D72A84865AE2F223F12B5A1ABC120;
+      test_vector.pubkey.y       = 384'hE171458FEAA939AAA3A8BFAC46B404BD8F6D5B348C0FA4D80CECA16356CA933240BDE8723415A8ECE035B0EDF36755DE;
+      test_vector.seed           = 0;
+      test_vector.nonce          = 0;
+      test_vector.R              = 0;
+      test_vector.S              = 0;
+      test_vector.IV             = 384'hddd0760448d42d8a43af45af836fce4de8be06b485e9b61b827c2f13173923e06a739f040649a667bf3b828246baa5a5;
+      test_vector.DH_sharedkey   = 384'h5EA1FC4AF7256D2055981B110575E0A8CAE53160137D904C59D926EB1B8456E427AA8A4540884C37DE159A58028ABC0E;
+
+      ecc_DH_sharedkey_test(1, test_vector);
+  endtask
+
+  //----------------------------------------------------------------
+  // ecc_DH_sharedkey_test()
+  //
+  // Perform a single DH shared key operation test.
+  //----------------------------------------------------------------
+  task ecc_DH_sharedkey_test(input [7 : 0]  tc_number,
+                        input test_vector_t test_vector);
+    reg [31  : 0]   start_time;
+    reg [31  : 0]   end_time;
+    operand_t       DH_sharedkey;
+    
+    begin
+      wait_ready();
+
+      $display("*** TC %0d DH shared key test started.", tc_number);
+      tc_ctr = tc_ctr + 1;
+
+      start_time = cycle_ctr;
+
+      $display("*** TC %0d writing PRIVKEY value %0h", tc_number, test_vector.privkey);
+      write_block(`ECC_REG_ECC_PRIVKEY_IN_0, test_vector.privkey);
+      $display("*** TC %0d writing PUBLIC KEY X value %0h", tc_number, test_vector.pubkey.x);
+      write_block(`ECC_REG_ECC_PUBKEY_X_0, test_vector.pubkey.x);
+      $display("*** TC %0d writing PUBLIC KEY Y value %0h", tc_number, test_vector.pubkey.y);
+      write_block(`ECC_REG_ECC_PUBKEY_Y_0, test_vector.pubkey.y);
+      $display("*** TC %0d writing IV value %0h", tc_number, test_vector.IV);
+      write_block(`ECC_REG_ECC_IV_0, test_vector.IV);
+
+      $display("*** TC %0d starting ECC DH shared key flow", tc_number);
+      trig_ECC(ECC_CMD_DH_SHARED);
+
+      wait_ready();
+
+      $display("*** TC %0d reading SHARED KEY", tc_number);
+      read_block(`ECC_REG_ECC_DH_SHARED_KEY_0);
+      DH_sharedkey = reg_read_data;
+      
+      trig_ECC(`ECC_REG_ECC_CTRL_ZEROIZE_MASK); //zeroize
+
+      end_time = cycle_ctr - start_time;
+      $display("*** DH shared key test processing time = %01d cycles.", end_time);
+      $display("privkey    : 0x%96x", test_vector.privkey);
+
+      if (DH_sharedkey == test_vector.DH_sharedkey)
+        begin
+          $display("*** TC %0d DH shared key successful.", tc_number);
+          $display("");
+        end
+      else
+        begin
+          $display("*** ERROR: TC %0d DH shared key NOT successful.", tc_number);
+          $display("Expected_x: 0x%96x", test_vector.DH_sharedkey);
+          $display("Got:        0x%96x", DH_sharedkey);
+          $display("");
+
+          error_ctr = error_ctr + 1;
+        end
+    end
+  endtask // ecc_DH_sharedkey_test
+
+  //----------------------------------------------------------------
   // main
   //
   // The main test functionality.
@@ -1187,7 +1286,9 @@ module ecc_top_tb
       //ecc_openssl_test();
 
       
-      ecc_test(); 
+      //ecc_test(); 
+
+      ecc_DH_test_vectors();
 
       display_test_results();
       

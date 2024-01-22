@@ -90,15 +90,15 @@ module ecc_dsa_ctrl
     //----------------------------------------------------------------
 
     localparam [RND_SIZE-1 : 0]  zero_pad               = '0;
-    localparam REG_NUM_DWORDS = REG_SIZE / RADIX;
+    localparam REG_NUM_DWORDS = REG_SIZE / DATA_WIDTH;
     //----------------------------------------------------------------
     // Registers including update variables and write enable.
     //----------------------------------------------------------------
-    logic [DSA_PROG_ADDR_W-1 : 0]           prog_cntr;
+    logic [DSA_PROG_ADDR_W-1 : 0]                prog_cntr;
     
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0] read_reg;
-    logic [(REG_SIZE+RND_SIZE)-1 : 0]       write_reg;
-    logic [1 : 0]                           cycle_cnt;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0] read_reg;
+    logic [(REG_SIZE+RND_SIZE)-1 : 0]            write_reg;
+    logic [1 : 0]                                cycle_cnt;
 
     logic zeroize_reg;
 
@@ -118,27 +118,28 @@ module ecc_dsa_ctrl
     logic hw_scalar_PK_we;
     logic hw_verify_r_we;
     logic hw_pk_chk_we;
+    logic hw_sharedkey_we;
     logic scalar_G_sel;
 
-    logic dsa_valid_reg;
-    logic dsa_ready_reg;
+    logic ecc_valid_reg;
+    logic ecc_ready_reg;
 
     logic ecc_status_done_d;
     logic ecc_status_done_p;
 
-    logic [1  : 0]          cmd_reg;
-    logic [2  : 0]          pm_cmd_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  msg_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  msg_reduced_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  privkey_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  kv_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  pubkeyx_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  pubkeyy_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  seed_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  nonce_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  r_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  s_reg;
-    logic [REG_NUM_DWORDS-1 : 0][RADIX-1:0]  IV_reg;
+    logic [3  : 0]          cmd_reg;
+    logic [3  : 0]          pm_cmd_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  msg_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  msg_reduced_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  privkey_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  kv_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  pubkeyx_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  pubkeyy_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  seed_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  nonce_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  r_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  s_reg;
+    logic [REG_NUM_DWORDS-1 : 0][DATA_WIDTH-1:0]  IV_reg;
     logic [REG_SIZE-1 : 0]  lambda;
     logic [REG_SIZE-1 : 0]  lambda_reg;
     logic [REG_SIZE-1 : 0]  masking_rnd;
@@ -155,7 +156,7 @@ module ecc_dsa_ctrl
     logic                               scalar_sca_en;
     logic                               scalar_sca_busy_o;
 
-    logic                   hmac_mode;
+    logic [1 : 0]           hmac_mode;
     logic                   hmac_init;
     logic                   hmac_ready;
     logic [REG_SIZE-1 : 0]  hmac_drbg_result;
@@ -194,6 +195,7 @@ module ecc_dsa_ctrl
     logic keygen_process;
     logic signing_process;
     logic verifying_process;
+    logic sharedkey_process;
 
     logic privkey_input_outofrange;
     logic r_output_outofrange;
@@ -228,7 +230,7 @@ module ecc_dsa_ctrl
     ecc_arith_unit #(
         .REG_SIZE(REG_SIZE),
         .RND_SIZE(RND_SIZE),
-        .RADIX(RADIX),
+        .RADIX(MULT_RADIX),
         .ADDR_WIDTH(DSA_OPR_ADDR_WIDTH),
         .p_prime(PRIME),
         .p_mu(PRIME_mu),
@@ -259,7 +261,7 @@ module ecc_dsa_ctrl
         .clk(clk),
         .reset_n(reset_n),
         .zeroize(zeroize_reg),
-        .keygen_sign(hmac_mode),
+        .hmac_mode(hmac_mode),
         .en(hmac_init),
         .ready(hmac_ready),
         .keygen_seed(seed_reg),
@@ -276,7 +278,7 @@ module ecc_dsa_ctrl
     ecc_scalar_blinding #(
         .REG_SIZE(REG_SIZE),
         .RND_SIZE(RND_SIZE),
-        .RADIX(RADIX),
+        .RADIX(SCALAR_BLIND_RADIX),
         .GROUP_ORDER(GROUP_ORDER)
         )
         ecc_scalar_blinding_i(
@@ -352,14 +354,14 @@ module ecc_dsa_ctrl
     // write the registers by hw
     always_comb hwif_in.reset_b = reset_n;
     always_comb hwif_in.hard_reset_b = cptra_pwrgood;
-    always_comb hwif_in.ecc_ready = dsa_ready_reg;
+    always_comb hwif_in.ecc_ready = ecc_ready_reg;
     always_comb hwif_in.ECC_NAME[0].NAME.next = ECC_CORE_NAME[31 : 0];
     always_comb hwif_in.ECC_NAME[1].NAME.next = ECC_CORE_NAME[63 : 32];
     always_comb hwif_in.ECC_VERSION[0].VERSION.next = ECC_CORE_VERSION[31 : 0];
     always_comb hwif_in.ECC_VERSION[1].VERSION.next = ECC_CORE_VERSION[63 : 32];
 
-    always_comb hwif_in.ECC_STATUS.READY.next = dsa_ready_reg;
-    always_comb hwif_in.ECC_STATUS.VALID.next = dsa_valid_reg;
+    always_comb hwif_in.ECC_STATUS.READY.next = ecc_ready_reg;
+    always_comb hwif_in.ECC_STATUS.VALID.next = ecc_valid_reg;
 
     
     always_comb begin // ecc_reg_writing
@@ -435,6 +437,12 @@ module ecc_dsa_ctrl
         for (int dword=0; dword < 12; dword++)begin
             IV_reg[dword] = hwif_out.ECC_IV[11-dword].IV.value;
             hwif_in.ECC_IV[dword].IV.hwclr = zeroize_reg;
+        end
+
+        for (int dword=0; dword < 12; dword++)begin
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.we = hw_sharedkey_we & !zeroize_reg;
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.next = read_reg[11-dword];  
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.hwclr = zeroize_reg;
         end
     end
 
@@ -535,6 +543,7 @@ module ecc_dsa_ctrl
         hw_scalar_PK_we = 0;
         hw_verify_r_we = 0;
         hw_pk_chk_we = 0;
+        hw_sharedkey_we = 0;
         if ((prog_instr.opcode == DSA_UOP_RD_CORE) & (cycle_cnt == 0)) begin
             unique casez (prog_instr.reg_id)
                 PRIVKEY_ID      : hw_privkey_we = 1;
@@ -546,6 +555,7 @@ module ecc_dsa_ctrl
                 SCALAR_PK_ID    : hw_scalar_PK_we = 1;
                 VERIFY_R_ID     : hw_verify_r_we = 1;
                 PK_VALID_ID     : hw_pk_chk_we = 1;
+                DH_SHAREDKEY_ID : hw_sharedkey_we = 1;
                 default         : 
                     begin 
                         hw_privkey_we = 0;
@@ -557,6 +567,7 @@ module ecc_dsa_ctrl
                         hw_scalar_PK_we = 0;
                         hw_verify_r_we = 0;
                         hw_pk_chk_we = 0;
+                        hw_sharedkey_we = 0;
                     end
             endcase
         end
@@ -682,12 +693,12 @@ module ecc_dsa_ctrl
     always_ff @(posedge clk or negedge reset_n) 
     begin : ECDSA_FSM
         if(!reset_n) begin
-            prog_cntr           <= DSA_RESET;
+            prog_cntr           <= ECC_RESET;
             cycle_cnt           <= '0;
             pm_cmd_reg          <= '0;
-            dsa_valid_reg       <= 0;
+            ecc_valid_reg       <= 0;
             scalar_G_sel        <= 0;
-            hmac_mode           <= 0;
+            hmac_mode           <= '0;
             hmac_init           <= 0;
             scalar_sca_en       <= 0;
             keygen_process      <= 0;
@@ -695,12 +706,12 @@ module ecc_dsa_ctrl
             verifying_process   <= 0;
         end
         else if(zeroize_reg) begin
-            prog_cntr           <= DSA_RESET;
+            prog_cntr           <= ECC_RESET;
             cycle_cnt           <= '0;
             pm_cmd_reg          <= '0;
-            dsa_valid_reg       <= 0;
+            ecc_valid_reg       <= 0;
             scalar_G_sel        <= 0;
-            hmac_mode           <= 0;
+            hmac_mode           <= '0;
             hmac_init           <= 0;
             scalar_sca_en       <= 0;
             keygen_process      <= 0;
@@ -709,7 +720,7 @@ module ecc_dsa_ctrl
         end
         else begin
             if (error_flag_edge) begin
-                prog_cntr       <= DSA_NOP;
+                prog_cntr       <= ECC_NOP;
                 cycle_cnt       <= 2'd3;
                 pm_cmd_reg      <= '0;
                 scalar_sca_en   <= 0;
@@ -728,7 +739,7 @@ module ecc_dsa_ctrl
             else begin
                 cycle_cnt <= '0;
                 unique casez (prog_cntr)
-                    DSA_NOP : begin 
+                    ECC_NOP : begin 
                         keygen_process      <= 0;
                         signing_process     <= 0;
                         verifying_process   <= 0;
@@ -736,29 +747,37 @@ module ecc_dsa_ctrl
                         unique casez (cmd_reg)
                             KEYGEN : begin  // keygen
                                 prog_cntr <= DSA_KG_S;
-                                dsa_valid_reg <= 0;
+                                ecc_valid_reg <= 0;
                                 scalar_G_sel <= 0;
-                                hmac_mode <= 0;
+                                hmac_mode <= 2'b00;
                                 keygen_process <= 1;
                             end   
 
                             SIGN : begin  // signing
                                 prog_cntr <= DSA_SGN_S;
-                                dsa_valid_reg <= 0;
+                                ecc_valid_reg <= 0;
                                 scalar_G_sel <= 0;
-                                hmac_mode <= 1;
+                                hmac_mode <= 2'b01;
                                 signing_process <= 1;
                             end                                   
 
                             VERIFY : begin  // verifying
                                 prog_cntr <= DSA_VER_S;
-                                dsa_valid_reg <= 0;
+                                ecc_valid_reg <= 0;
                                 scalar_G_sel <= 1;
                                 verifying_process <= 1;
                             end
 
+                            SHARED_KEY : begin  // DH shared_key
+                                prog_cntr <= DH_SHARED_S;
+                                ecc_valid_reg <= 0;
+                                scalar_G_sel <= 1;
+                                hmac_mode <= 2'b10;
+                                sharedkey_process <= 1;
+                            end
+
                             default : begin
-                                prog_cntr <= DSA_NOP;
+                                prog_cntr <= ECC_NOP;
                                 scalar_G_sel <= 0;
                             end
                         endcase
@@ -767,24 +786,30 @@ module ecc_dsa_ctrl
                     end                
 
                     DSA_KG_E : begin // end of keygen
-                        prog_cntr <= DSA_NOP;
-                        dsa_valid_reg <= 1;
+                        prog_cntr <= ECC_NOP;
+                        ecc_valid_reg <= 1;
                     end
 
                     DSA_SGN_E : begin // end of signing
-                        prog_cntr <= DSA_NOP;
-                        dsa_valid_reg <= 1;
+                        prog_cntr <= ECC_NOP;
+                        ecc_valid_reg <= 1;
                     end
 
                     DSA_VER_E : begin // end of verifying
-                        prog_cntr <= DSA_NOP;
-                        dsa_valid_reg <= 1;
+                        prog_cntr <= ECC_NOP;
+                        ecc_valid_reg <= 1;
+                    end
+
+                    DH_SHARED_E: begin // end of DH shared key
+                        prog_cntr <= ECC_NOP;
+                        ecc_valid_reg <= 1;
                     end
                     
-                    DSA_RESET,
+                    ECC_RESET,
                     DSA_KG_S,
                     DSA_SGN_S,
-                    DSA_VER_S : begin
+                    DSA_VER_S,
+                    DH_SHARED_S : begin
                         prog_cntr       <= prog_cntr + 1;
                         pm_cmd_reg      <= prog_instr.opcode.pm_cmd;
                         hmac_init       <= prog_instr.opcode.hmac_drbg_en;
@@ -813,8 +838,8 @@ module ecc_dsa_ctrl
     always_comb ecc_status_done_p = hwif_in.ECC_STATUS.VALID.next && !ecc_status_done_d;
 
     // Set the ready/busy flag of ECC
-    assign dsa_busy = (prog_cntr == DSA_NOP)? 1'b0 : 1'b1;
-    always_comb dsa_ready_reg = !(dsa_busy | pm_busy_o);
+    assign dsa_busy = (prog_cntr == ECC_NOP)? 1'b0 : 1'b1;
+    always_comb ecc_ready_reg = !(dsa_busy | pm_busy_o);
     
     //Key Vault Control Modules
     //Read PRIVKEY

@@ -234,6 +234,19 @@ module caliptra_top_sva
 
   `ifndef VERILATOR
   generate
+    begin: SHA256_WNTZ_data_check
+      for(genvar dword = 0; dword < 8; dword++) begin
+        SHA256_WNTZ_data_check: assert property (
+                                            @(posedge `SVA_RDC_CLK)
+                                            //disable iff (`CPTRA_TOP_PATH.)
+                                            (`SERVICES_PATH.WriteData == 'hdd && `SERVICES_PATH.mailbox_write) |=> ##[1:$] $rose(`SHA256_PATH.digest_valid_reg) |=> (`SHA256_PATH.digest_reg[dword] == `SERVICES_PATH.sha256_wntz_test_vector.sha256_wntz_digest[dword])
+                                          )
+                                  else $display("SVA ERROR: SHA256 wntz digest %h does not match expected digest %h!", `SHA256_PATH.digest_reg[dword], `SERVICES_PATH.sha256_wntz_test_vector.sha256_wntz_digest[dword]);
+      end //for
+    end //data check
+  endgenerate
+
+  generate
     begin: UDS_data_check
     for(genvar dword = 0; dword < `CLP_OBF_UDS_DWORDS; dword++) begin
       DOE_UDS_data_check:  assert property (
@@ -531,7 +544,7 @@ module caliptra_top_sva
 
   ECC_valid_flag:       assert property (
                                     @(posedge `SVA_RDC_CLK)
-                                    `ECC_PATH.dsa_valid_reg |-> `ECC_PATH.dsa_ready_reg 
+                                    `ECC_PATH.ecc_valid_reg |-> `ECC_PATH.ecc_ready_reg 
                                     )
                         else $display("SVA ERROR: ECC VALID flag mismatch!");      
 
