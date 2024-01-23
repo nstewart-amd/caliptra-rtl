@@ -107,9 +107,9 @@ module ecc_dsa_ctrl
     logic pm_busy_o;
     
     logic hw_privkey_we;
-    logic privkey_out_we;
     logic privkey_we_reg;
-    logic privkey_we_reg_ff;
+    logic sharedkey_we_reg;
+    logic secretkey_we;
     logic hw_pubkeyx_we;
     logic hw_pubkeyy_we;
     logic hw_r_we;
@@ -324,21 +324,21 @@ module ecc_dsa_ctrl
     begin : ecc_kv_reg
         if (!reset_n) begin
             privkey_we_reg      <= '0;
-            privkey_we_reg_ff   <= '0;
+            sharedkey_we_reg    <= '0;
             kv_reg    <= '0;
             kv_read_data_present <= '0;
         end
         else if (zeroize_reg) begin
             privkey_we_reg      <= '0;
-            privkey_we_reg_ff   <= '0;
+            sharedkey_we_reg    <= '0;
             kv_reg    <= '0;
             kv_read_data_present <= '0;
         end
         //Store private key here before pushing to keyvault
         else begin
-            privkey_we_reg <= hw_privkey_we;
-            privkey_we_reg_ff <= privkey_we_reg;
-            if (privkey_out_we & (dest_keyvault | kv_read_data_present))
+            privkey_we_reg   <= hw_privkey_we;
+            sharedkey_we_reg <= hw_sharedkey_we;
+            if (secretkey_we & (dest_keyvault | kv_read_data_present))
                 kv_reg <= read_reg;
 
             kv_read_data_present <= kv_read_data_present_set ? '1 :
@@ -346,7 +346,7 @@ module ecc_dsa_ctrl
         end
     end
 
-    always_comb privkey_out_we = privkey_we_reg & ~privkey_we_reg_ff;
+    always_comb secretkey_we = (privkey_we_reg | sharedkey_we_reg);
 
     assign error_intr = hwif_out.intr_block_rf.error_global_intr_r.intr;
     assign notif_intr = hwif_out.intr_block_rf.notif_global_intr_r.intr;
@@ -376,7 +376,7 @@ module ecc_dsa_ctrl
 
         for (int dword=0; dword < 12; dword++)begin
             //If keyvault is not enabled, grab the sw value as usual
-            hwif_in.ECC_PRIVKEY_OUT[dword].PRIVKEY_OUT.we = (privkey_out_we & ~(dest_keyvault | kv_read_data_present)) & !zeroize_reg;
+            hwif_in.ECC_PRIVKEY_OUT[dword].PRIVKEY_OUT.we = (privkey_we_reg & ~(dest_keyvault | kv_read_data_present)) & !zeroize_reg;
             hwif_in.ECC_PRIVKEY_OUT[dword].PRIVKEY_OUT.next = read_reg[11-dword];
             hwif_in.ECC_PRIVKEY_OUT[dword].PRIVKEY_OUT.hwclr = zeroize_reg;
         end
@@ -440,7 +440,7 @@ module ecc_dsa_ctrl
         end
 
         for (int dword=0; dword < 12; dword++)begin
-            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.we = hw_sharedkey_we & !zeroize_reg;
+            hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.we = (sharedkey_we_reg & ~(dest_keyvault | kv_read_data_present)) & !zeroize_reg;
             hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.next = read_reg[11-dword];  
             hwif_in.ECC_DH_SHARED_KEY[dword].DH_SHARED_KEY.hwclr = zeroize_reg;
         end
@@ -499,8 +499,8 @@ module ecc_dsa_ctrl
     `CALIPTRA_KV_WRITE_CTRL_REG2STRUCT(kv_write_ctrl_reg, ecc_kv_wr_pkey_ctrl)
 
     //Force result into KV reg whenever source came from KV
-    always_comb kv_read_data_present_set = kv_seed_read_ctrl_reg.read_en;
-    always_comb kv_read_data_present_reset = kv_read_data_present & privkey_out_we;
+    always_comb kv_read_data_present_set = kv_seed_read_ctrl_reg.read_en | kv_privkey_read_ctrl_reg.read_en;
+    always_comb kv_read_data_present_reset = kv_read_data_present & secretkey_we;
 
     always_comb pcr_sign_mode = hwif_out.ECC_CTRL.PCR_SIGN.value;
 
@@ -917,7 +917,7 @@ module ecc_dsa_ctrl
 
         //interface with client
         .dest_keyvault(dest_keyvault),
-        .dest_data_avail(privkey_out_we),
+        .dest_data_avail(secretkey_we),
         .dest_data(kv_reg),
 
         .error_code(kv_write_error),
