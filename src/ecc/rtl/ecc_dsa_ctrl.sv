@@ -925,4 +925,7 @@ module ecc_dsa_ctrl
         .dest_done(kv_write_done)
     );
 
+    `CALIPTRA_ASSERT_MUTEX(ERR_ECC_PRIVKEY_WE_MUTEX, {hw_privkey_we, privkey_we_reg}, clk, reset_n)
+    `CALIPTRA_ASSERT_MUTEX(ERR_ECC_SHAREDKEY_WE_MUTEX, {hw_sharedkey_we , sharedkey_we_reg}, clk, reset_n)
+
 endmodule
