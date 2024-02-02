@@ -60,14 +60,14 @@ void main () {
     uint32_t ii;
     uint32_t data;
     enum mbox_fsm_e state;
-    uint32_t mbox_data[] = { 0x00000000,
-                             0x11111111,
-                             0x22222222,
-                             0x33333333,
-                             0x44444444,
-                             0x55555555,
+    uint32_t mbox_data[] = { 0x88888888,
+                             0x77777777,
                              0x66666666,
-                             0x77777777 };
+                             0x55555555,
+                             0x44444444,
+                             0x33333333,
+                             0x22222222,
+                             0x11111111 };
     uint32_t read_data;
 
     // Message
@@ -118,7 +118,7 @@ void main () {
         SEND_STDOUT_CTRL( 0x1);
         while(1);
     } else {
-        VPRINTF(LOW, "FW: Mailbox in expected state, MBOX_EXECUTE_SOC, ending test with success\n");
+        VPRINTF(LOW, "FW: Mailbox in expected state, MBOX_EXECUTE_SOC\n");
     }
 
     //Wait for SoC to reset execute reg
@@ -150,11 +150,12 @@ void main () {
     //Poll status until data ready is set
     while((lsu_read_32(CLP_MBOX_CSR_MBOX_STATUS) & MBOX_CSR_MBOX_STATUS_STATUS_MASK) != DATA_READY);
 
-    //check data 
-    VPRINTF(LOW, "FW: Checking %d bytes from mailbox as if return data\n", MBOX_DLEN_VAL);
+    //check data through direct path
+    //dataout doesn't populate correctly since SoC responding isn't a valid case
+    VPRINTF(LOW, "FW: Checking %d bytes from mailbox through direct read path\n", MBOX_DLEN_VAL);
     for (ii = 0; ii < MBOX_DLEN_VAL/4; ii++) {
-        VPRINTF(HIGH, "  datain: 0x%x\n", mbox_data[ii]);
-        read_data = lsu_read_32(CLP_MBOX_CSR_MBOX_DATAOUT);
+        read_data = lsu_read_32(0x30000000 + ii*4);
+        VPRINTF(HIGH, "  dataout: 0x%x\n", read_data);
         if (read_data != mbox_data[ii]) {
             VPRINTF(ERROR, "ERROR: mailbox data mismatch actual (0x%x) expected (0x%x)\n", read_data, mbox_data[ii]);
             SEND_STDOUT_CTRL( 0x1);
