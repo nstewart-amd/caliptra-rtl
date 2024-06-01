@@ -263,8 +263,8 @@
 
     endgroup
 
-    /*----------------------- SOC_IFC_REG__CPTRA_MBOX_VALID_PAUSER COVERGROUPS -----------------------*/
-    covergroup soc_ifc_reg__CPTRA_MBOX_VALID_PAUSER_bit_cg with function sample(input bit reg_bit);
+    /*----------------------- SOC_IFC_REG__CPTRA_MBOX_VALID_AXI_ID COVERGROUPS -----------------------*/
+    covergroup soc_ifc_reg__CPTRA_MBOX_VALID_AXI_ID_bit_cg with function sample(input bit reg_bit);
         option.per_instance = 1;
         reg_bit_cp : coverpoint reg_bit {
             bins value[2] = {0,1};
@@ -275,16 +275,16 @@
         }
 
     endgroup
-    covergroup soc_ifc_reg__CPTRA_MBOX_VALID_PAUSER_fld_cg with function sample(
-    input bit [32-1:0] PAUSER
+    covergroup soc_ifc_reg__CPTRA_MBOX_VALID_AXI_ID_fld_cg with function sample(
+    input bit [32-1:0] AXI_ID
     );
         option.per_instance = 1;
-        PAUSER_cp : coverpoint PAUSER;
+        AXI_ID_cp : coverpoint AXI_ID;
 
     endgroup
 
-    /*----------------------- SOC_IFC_REG__CPTRA_MBOX_PAUSER_LOCK COVERGROUPS -----------------------*/
-    covergroup soc_ifc_reg__CPTRA_MBOX_PAUSER_LOCK_bit_cg with function sample(input bit reg_bit);
+    /*----------------------- SOC_IFC_REG__CPTRA_MBOX_AXI_ID_LOCK COVERGROUPS -----------------------*/
+    covergroup soc_ifc_reg__CPTRA_MBOX_AXI_ID_LOCK_bit_cg with function sample(input bit reg_bit);
         option.per_instance = 1;
         reg_bit_cp : coverpoint reg_bit {
             bins value[2] = {0,1};
@@ -295,7 +295,7 @@
         }
 
     endgroup
-    covergroup soc_ifc_reg__CPTRA_MBOX_PAUSER_LOCK_fld_cg with function sample(
+    covergroup soc_ifc_reg__CPTRA_MBOX_AXI_ID_LOCK_fld_cg with function sample(
     input bit [1-1:0] LOCK
     );
         option.per_instance = 1;
@@ -303,8 +303,8 @@
 
     endgroup
 
-    /*----------------------- SOC_IFC_REG__CPTRA_TRNG_VALID_PAUSER COVERGROUPS -----------------------*/
-    covergroup soc_ifc_reg__CPTRA_TRNG_VALID_PAUSER_bit_cg with function sample(input bit reg_bit);
+    /*----------------------- SOC_IFC_REG__CPTRA_TRNG_VALID_AXI_ID COVERGROUPS -----------------------*/
+    covergroup soc_ifc_reg__CPTRA_TRNG_VALID_AXI_ID_bit_cg with function sample(input bit reg_bit);
         option.per_instance = 1;
         reg_bit_cp : coverpoint reg_bit {
             bins value[2] = {0,1};
@@ -315,11 +315,11 @@
         }
 
     endgroup
-    covergroup soc_ifc_reg__CPTRA_TRNG_VALID_PAUSER_fld_cg with function sample(
-    input bit [32-1:0] PAUSER
+    covergroup soc_ifc_reg__CPTRA_TRNG_VALID_AXI_ID_fld_cg with function sample(
+    input bit [32-1:0] AXI_ID
     );
         option.per_instance = 1;
-        PAUSER_cp : coverpoint PAUSER {
+        AXI_ID_cp : coverpoint AXI_ID {
             bins zero_val = {32'h0};
             bins rand_val[64] = {[1:32'hFFFF_FFFE]};
             bins ones_val = {{32{1'b1}}};
@@ -329,8 +329,8 @@
 
     endgroup
 
-    /*----------------------- SOC_IFC_REG__CPTRA_TRNG_PAUSER_LOCK COVERGROUPS -----------------------*/
-    covergroup soc_ifc_reg__CPTRA_TRNG_PAUSER_LOCK_bit_cg with function sample(input bit reg_bit);
+    /*----------------------- SOC_IFC_REG__CPTRA_TRNG_AXI_ID_LOCK COVERGROUPS -----------------------*/
+    covergroup soc_ifc_reg__CPTRA_TRNG_AXI_ID_LOCK_bit_cg with function sample(input bit reg_bit);
         option.per_instance = 1;
         reg_bit_cp : coverpoint reg_bit {
             bins value[2] = {0,1};
@@ -341,7 +341,7 @@
         }
 
     endgroup
-    covergroup soc_ifc_reg__CPTRA_TRNG_PAUSER_LOCK_fld_cg with function sample(
+    covergroup soc_ifc_reg__CPTRA_TRNG_AXI_ID_LOCK_fld_cg with function sample(
     input bit [1-1:0] LOCK
     );
         option.per_instance = 1;
@@ -787,8 +787,8 @@
 
     endgroup
 
-    /*----------------------- SOC_IFC_REG__CPTRA_FUSE_VALID_PAUSER COVERGROUPS -----------------------*/
-    covergroup soc_ifc_reg__CPTRA_FUSE_VALID_PAUSER_bit_cg with function sample(input bit reg_bit);
+    /*----------------------- SOC_IFC_REG__CPTRA_FUSE_VALID_AXI_ID COVERGROUPS -----------------------*/
+    covergroup soc_ifc_reg__CPTRA_FUSE_VALID_AXI_ID_bit_cg with function sample(input bit reg_bit);
         option.per_instance = 1;
         reg_bit_cp : coverpoint reg_bit {
             bins value[2] = {0,1};
@@ -799,11 +799,11 @@
         }
 
     endgroup
-    covergroup soc_ifc_reg__CPTRA_FUSE_VALID_PAUSER_fld_cg with function sample(
-    input bit [32-1:0] PAUSER
+    covergroup soc_ifc_reg__CPTRA_FUSE_VALID_AXI_ID_fld_cg with function sample(
+    input bit [32-1:0] AXI_ID
     );
         option.per_instance = 1;
-        PAUSER_cp : coverpoint PAUSER {
+        AXI_ID_cp : coverpoint AXI_ID {
             bins zero_val = {32'h0};
             bins rand_val[64] = {[1:32'hFFFF_FFFE]};
             bins ones_val = {{32{1'b1}}};
@@ -813,8 +813,8 @@
 
     endgroup
 
-    /*----------------------- SOC_IFC_REG__CPTRA_FUSE_PAUSER_LOCK COVERGROUPS -----------------------*/
-    covergroup soc_ifc_reg__CPTRA_FUSE_PAUSER_LOCK_bit_cg with function sample(input bit reg_bit);
+    /*----------------------- SOC_IFC_REG__CPTRA_FUSE_AXI_ID_LOCK COVERGROUPS -----------------------*/
+    covergroup soc_ifc_reg__CPTRA_FUSE_AXI_ID_LOCK_bit_cg with function sample(input bit reg_bit);
         option.per_instance = 1;
         reg_bit_cp : coverpoint reg_bit {
             bins value[2] = {0,1};
@@ -825,7 +825,7 @@
         }
 
     endgroup
-    covergroup soc_ifc_reg__CPTRA_FUSE_PAUSER_LOCK_fld_cg with function sample(
+    covergroup soc_ifc_reg__CPTRA_FUSE_AXI_ID_LOCK_fld_cg with function sample(
     input bit [1-1:0] LOCK
     );
         option.per_instance = 1;
